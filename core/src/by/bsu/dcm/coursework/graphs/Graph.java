@@ -1,6 +1,8 @@
 package by.bsu.dcm.coursework.graphs;
 
 import by.bsu.dcm.coursework.AssetsManager;
+import by.bsu.dcm.coursework.graphics.Graphics;
+import by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
@@ -19,19 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Graph {
-    public enum AntiAliasing {
-        noAA(), SSAA4(), FXAA(), SSAA4_FXAA()
-    }
-
     private static final short DEFAULT_WIDTH = 1280;
     private static final short DEFAULT_HEIGHT = 720;
     private static final byte DEFAULT_CELL_NUM_X = 16;
     private static final byte DEFAULT_CELL_NUM_Y = 9;
     private static final float[] SCALES = {0.1f, 0.2f, 0.25f, 0.5f, 1.0f};
-
-    private static final float FXAA_SPAN_MAX = 8.0f;
-    private static final float FXAA_REDUCE_MUL = 1.0f / 8.0f;
-    private static final float FXAA_REDUCE_MIN = 1.0f / 128.0f;
 
     private AntiAliasing graphsAA;
 
@@ -454,78 +448,14 @@ public class Graph {
         normalize();
     }
 
-    private TextureRegion calcDownsample4(TextureRegion texture) {
-        FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, texture.getRegionWidth() / 2, texture.getRegionHeight() / 2, false);
-        TextureRegion result;
-
-        batch.setShader(AssetsManager.getGraphDownsample4Shader());
-        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, texture.getRegionWidth(), texture.getRegionHeight()));
-        batch.disableBlending();
-
-        fbo.begin();
-
-        Gdx.gl30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-
-        batch.begin();
-
-        AssetsManager.getGraphDownsample4Shader().setUniformf("u_texSize", texture.getRegionWidth() / 2, texture.getRegionHeight() / 2);
-
-        batch.draw(texture, 0.0f, 0.0f);
-
-        batch.end();
-        fbo.end();
-
-        batch.enableBlending();
-
-        result = new TextureRegion(fbo.getColorBufferTexture());
-        result.flip(false, true);
-
-        return result;
-    }
-
-    private TextureRegion calcFXAA(TextureRegion texture, float spanMax, float reduceMul, float reduceMin) {
-        FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, texture.getRegionWidth(), texture.getRegionHeight(), false);
-        TextureRegion result;
-
-        batch.setShader(AssetsManager.getGraphFXAAShader());
-        batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, texture.getRegionWidth(), texture.getRegionHeight()));
-        batch.disableBlending();
-
-        fbo.begin();
-
-        Gdx.gl30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-
-        batch.begin();
-
-        AssetsManager.getGraphFXAAShader().setUniformf("u_texSize", texture.getRegionWidth(), texture.getRegionHeight());
-        AssetsManager.getGraphFXAAShader().setUniformf("u_spanMax", spanMax);
-        AssetsManager.getGraphFXAAShader().setUniformf("u_reduceMul", reduceMul);
-        AssetsManager.getGraphFXAAShader().setUniformf("u_reduceMin", reduceMin);
-
-        batch.draw(texture, 0.0f, 0.0f);
-
-        batch.end();
-        batch.enableBlending();
-
-        fbo.end();
-
-        result = new TextureRegion(fbo.getColorBufferTexture());
-        result.flip(false, true);
-
-        return result;
-    }
-
     private TextureRegion generateGraphs(int width, int height) {
         switch (graphsAA) {
             case SSAA4:
-                return calcDownsample4(generateGraphsRaw(2 * width, 2 * height, 2.0f));
+                return Graphics.calcDownsample4(generateGraphsRaw(2 * width, 2 * height, 2.0f));
             case FXAA:
-                return calcFXAA(generateGraphsRaw(width, height, 1.0f), FXAA_SPAN_MAX, FXAA_REDUCE_MUL, FXAA_REDUCE_MIN);
+                return Graphics.calcFXAA(generateGraphsRaw(width, height, 1.0f));
             case SSAA4_FXAA:
-                return calcDownsample4(calcFXAA(generateGraphsRaw(2 * width, 2 * height, 2.0f),
-                        FXAA_SPAN_MAX, FXAA_REDUCE_MUL, FXAA_REDUCE_MIN));
+                return Graphics.calcDownsample4(Graphics.calcFXAA(generateGraphsRaw(2 * width, 2 * height, 2.0f)));
             default:
                 return generateGraphsRaw(width, height, 1.0f);
         }

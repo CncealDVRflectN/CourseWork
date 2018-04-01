@@ -1,5 +1,6 @@
 package by.bsu.dcm.coursework;
 
+import by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 import by.bsu.dcm.coursework.graphs.Graph;
 import by.bsu.dcm.coursework.graphs.GraphPoints;
 import com.badlogic.gdx.ApplicationAdapter;
@@ -80,7 +81,7 @@ public class CourseWork extends ApplicationAdapter {
         graph.addGraph(sin);
         graph.addGraph(squared);
 
-        graph.setAntialiasing(Graph.AntiAliasing.SSAA4_FXAA);
+        graph.setAntialiasing(AntiAliasing.SSAA4_FXAA);
     }
 
     @Override
