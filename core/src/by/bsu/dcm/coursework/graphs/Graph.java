@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -27,7 +26,7 @@ public class Graph {
     private static final short DEFAULT_HEIGHT = 720;
     private static final byte DEFAULT_CELL_NUM_X = 16;
     private static final byte DEFAULT_CELL_NUM_Y = 9;
-    private static final float[] DIMS = { 0.1f, 0.2f, 0.25f, 0.5f, 1.0f };
+    private static final float[] SCALES = {0.1f, 0.2f, 0.25f, 0.5f, 1.0f};
 
     private static final float FXAA_SPAN_MAX = 8.0f;
     private static final float FXAA_REDUCE_MUL = 1.0f / 8.0f;
@@ -43,13 +42,18 @@ public class Graph {
     private float markupLineWidth;
     private float axisLineWidth;
 
+    private float scaleLineTopLength;
+    private float scaleLineBottomLength;
+    private float scaleLineLeftLength;
+    private float scaleLineRightLength;
+
     private Vector2 centerAxis;
     private Vector2 centerAxisNorm;
-    private Vector2 dimStep;
-    private float[] dimsX;
-    private float[] dimsY;
-    private float[] dimsXNorm;
-    private float[] dimsYNorm;
+    private Vector2 scaleStep;
+    private float[] scalesX;
+    private float[] scalesY;
+    private float[] scalesXNorm;
+    private float[] scalesYNorm;
 
     private List<GraphPoints> graphs;
     private List<GraphPoints> graphsNorm;
@@ -70,9 +74,14 @@ public class Graph {
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         font = AssetsManager.getFont(fontParam);
 
+        scaleLineTopLength = 4.0f;
+        scaleLineBottomLength = 4.0f;
+        scaleLineLeftLength = 4.0f;
+        scaleLineRightLength = 4.0f;
+
         graphsAA = AntiAliasing.noAA;
 
-        dimStep = new Vector2();
+        scaleStep = new Vector2();
 
         graphs = new ArrayList<>();
         graphsNorm = new ArrayList<>();
@@ -99,7 +108,7 @@ public class Graph {
         });
     }
 
-    private float calcDimStep(float dif, int cellNum) {
+    private float calcScaleStep(float dif, int cellNum) {
         float result;
         int pow = 0;
         byte sign = 1;
@@ -122,9 +131,9 @@ public class Graph {
             }
         }
 
-        for (float dim : DIMS) {
-            if (result <= dim) {
-                result = dim;
+        for (float scale : SCALES) {
+            if (result <= scale) {
+                result = scale;
                 break;
             }
         }
@@ -136,9 +145,9 @@ public class Graph {
         return result;
     }
 
-    private float[] calcDim(float min, float dimStep, int cellNum) {
+    private float[] calcScale(float min, float scaleStep, int cellNum) {
         float[] result;
-        float minMul = min / dimStep;
+        float minMul = min / scaleStep;
         int sign = (minMul >= 0.0f) ? 1 : -1;
         result = new float[cellNum + 3];
 
@@ -150,44 +159,44 @@ public class Graph {
         }
         minMul *= sign;
 
-        result[0] = (minMul - 1.0f) * dimStep;
+        result[0] = (minMul - 1.0f) * scaleStep;
         for (int i = 1; i < result.length; i++) {
-            result[i] = (minMul + (i - 1)) * dimStep;
+            result[i] = (minMul + (i - 1)) * scaleStep;
         }
 
         return result;
     }
 
-    private void center(float[] dims, float nodeMin, float nodeMax, float dimStep) {
-        float minDif = nodeMin - dims[1];
-        float maxDif = dims[dims.length - 2] - nodeMax;
-        float minOffset = minDif / dimStep;
-        float maxOffset = maxDif / dimStep;
+    private void center(float[] scales, float nodeMin, float nodeMax, float scaleStep) {
+        float minDif = nodeMin - scales[1];
+        float maxDif = scales[scales.length - 2] - nodeMax;
+        float minOffset = minDif / scaleStep;
+        float maxOffset = maxDif / scaleStep;
         float availableOffset = maxOffset - minOffset;
         int offset = Math.round(availableOffset / 2.0f);
 
-        for (int i = 0; i < dims.length; i++) {
-            dims[i] -= offset * dimStep;
+        for (int i = 0; i < scales.length; i++) {
+            scales[i] -= offset * scaleStep;
         }
     }
 
-    private Vector2 calcCenterAxis(float[] dimsX, float[] dimsY) {
+    private Vector2 calcCenterAxis() {
         Vector2 result = new Vector2();
 
-        if (dimsX[1] <= 0.0f && dimsX[dimsX.length - 2] >= 0.0f) {
+        if (scalesX[1] <= 0.0f && scalesX[scalesX.length - 2] >= 0.0f) {
             result.x = 0.0f;
-        } else if (dimsX[1] < 0.0f && dimsX[dimsX.length - 2] < 0.0f) {
-            result.x = dimsX[dimsX.length - 2];
+        } else if (scalesX[1] < 0.0f && scalesX[scalesX.length - 2] < 0.0f) {
+            result.x = scalesX[scalesX.length - 2];
         } else {
-            result.x = dimsX[1];
+            result.x = scalesX[1];
         }
 
-        if (dimsY[1] <= 0.0f && dimsY[dimsY.length - 2] >= 0.0f) {
+        if (scalesY[1] <= 0.0f && scalesY[scalesY.length - 2] >= 0.0f) {
             result.y = 0.0f;
-        } else if (dimsY[1] < 0.0f && dimsY[dimsY.length - 2] < 0.0f) {
-            result.y = dimsY[dimsY.length - 2];
+        } else if (scalesY[1] < 0.0f && scalesY[scalesY.length - 2] < 0.0f) {
+            result.y = scalesY[scalesY.length - 2];
         } else {
-            result.y = dimsY[1];
+            result.y = scalesY[1];
         }
 
         return result;
@@ -218,13 +227,13 @@ public class Graph {
     }
 
     private void normalize() {
-        Vector2 min = new Vector2((dimsX[0] + dimsX[1]) / 2.0f, (dimsY[0] + dimsY[1]) / 2.0f);
-        Vector2 max = new Vector2((dimsX[dimsX.length - 2] + dimsX[dimsX.length - 1]) / 2.0f,
-                (dimsY[dimsY.length - 2] + dimsY[dimsY.length - 1]) / 2.0f);
+        Vector2 min = new Vector2((scalesX[0] + scalesX[1]) / 2.0f, (scalesY[0] + scalesY[1]) / 2.0f);
+        Vector2 max = new Vector2((scalesX[scalesX.length - 2] + scalesX[scalesX.length - 1]) / 2.0f,
+                (scalesY[scalesY.length - 2] + scalesY[scalesY.length - 1]) / 2.0f);
         graphsNorm.clear();
 
-        dimsXNorm = normalize(dimsX, min.x, max.x);
-        dimsYNorm = normalize(dimsY, min.y, max.y);
+        scalesXNorm = normalize(scalesX, min.x, max.x);
+        scalesYNorm = normalize(scalesY, min.y, max.y);
         centerAxisNorm = normalize(centerAxis, min, max);
         graphs.forEach(graph -> {
             GraphPoints graphNorm = new GraphPoints();
@@ -245,12 +254,12 @@ public class Graph {
         renderer.begin(ShapeRenderer.ShapeType.Line);
         renderer.setColor(markupColor);
 
-        for (int i = 0; i < dimsXNorm.length; i++) {
-            renderer.line(dimsXNorm[i] * width, 0.0f, dimsXNorm[i] * width, height);
+        for (int i = 0; i < scalesXNorm.length; i++) {
+            renderer.line(scalesXNorm[i] * width, 0.0f, scalesXNorm[i] * width, height);
         }
 
-        for (int i = 0; i < dimsYNorm.length; i++) {
-            renderer.line(0.0f, dimsYNorm[i] * height, width, dimsYNorm[i] * height);
+        for (int i = 0; i < scalesYNorm.length; i++) {
+            renderer.line(0.0f, scalesYNorm[i] * height, width, scalesYNorm[i] * height);
         }
 
         renderer.end();
@@ -259,6 +268,8 @@ public class Graph {
     }
 
     private void drawAxis(int width, int height) {
+        float scaleLineOffset = axisLineWidth / 2.0f;
+
         Gdx.gl30.glLineWidth(axisLineWidth);
 
         renderer.begin(ShapeRenderer.ShapeType.Line);
@@ -267,14 +278,15 @@ public class Graph {
         renderer.line(0.0f, centerAxisNorm.y * height, width, centerAxisNorm.y * height);
         renderer.line(centerAxisNorm.x * width, 0.0f, centerAxisNorm.x * width, height);
 
-        for (int i = 0; i < dimsXNorm.length; i++) {
-            renderer.line(dimsXNorm[i] * width, centerAxisNorm.y * height - 5.0f,
-                    dimsXNorm[i] * width, centerAxisNorm.y * height + 5.0f);
+        for (int i = 0; i < scalesXNorm.length; i++) {
+            renderer.setColor(axisColor);
+            renderer.line(scalesXNorm[i] * width, centerAxisNorm.y * height - (scaleLineOffset + scaleLineBottomLength),
+                    scalesXNorm[i] * width, centerAxisNorm.y * height + (scaleLineOffset + scaleLineTopLength));
         }
 
-        for (int i = 0; i < dimsYNorm.length; i++) {
-            renderer.line(centerAxisNorm.x * width - 5.0f, dimsYNorm[i] * height,
-                    centerAxisNorm.x * width + 5.0f, dimsYNorm[i] * height);
+        for (int i = 0; i < scalesYNorm.length; i++) {
+            renderer.line(centerAxisNorm.x * width - (scaleLineOffset + scaleLineLeftLength), scalesYNorm[i] * height,
+                    centerAxisNorm.x * width + (scaleLineOffset + scaleLineRightLength), scalesYNorm[i] * height);
         }
 
         renderer.end();
@@ -282,20 +294,20 @@ public class Graph {
         Gdx.gl30.glLineWidth(1.0f);
     }
 
-    private void drawDims(int width, int height) {
+    private void drawScales(int width, int height) {
         batch.setShader(SpriteBatch.createDefaultShader());
 
         batch.begin();
 
-        for (int i = 0; i < dimsXNorm.length; i++) {
-            if (dimsX[i] != centerAxis.x) {
-                font.draw(batch, Float.toString(dimsX[i]), dimsXNorm[i] * width , centerAxisNorm.y * height - 10.0f);
+        for (int i = 0; i < scalesXNorm.length; i++) {
+            if (scalesX[i] != centerAxis.x) {
+                font.draw(batch, Float.toString(scalesX[i]), scalesXNorm[i] * width, centerAxisNorm.y * height - 10.0f);
             }
         }
 
-        for (int i = 0; i < dimsYNorm.length; i++) {
-            if (dimsY[i] != centerAxis.y) {
-                font.draw(batch, Float.toString(dimsY[i]), centerAxisNorm.x * width + 10.0f, dimsYNorm[i] * height);
+        for (int i = 0; i < scalesYNorm.length; i++) {
+            if (scalesY[i] != centerAxis.y) {
+                font.draw(batch, Float.toString(scalesY[i]), centerAxisNorm.x * width + 10.0f, scalesYNorm[i] * height);
             }
         }
 
@@ -319,7 +331,7 @@ public class Graph {
 
         drawBackground(width, height);
         drawAxis(width, height);
-        drawDims(width, height);
+        drawScales(width, height);
 
         fbo.end();
 
@@ -387,13 +399,13 @@ public class Graph {
 
         calcMinMax();
         dif = (cellNumXScaled > cellNumYScaled) ? graphsMax.y - graphsMin.y : graphsMax.x - graphsMin.x;
-        dimStep.x = calcDimStep(dif, minCellNum);
-        dimStep.y = calcDimStep(dif, minCellNum);
-        dimsX = calcDim(graphsMin.x, dimStep.x, cellNumXScaled);
-        dimsY = calcDim(graphsMin.y, dimStep.y, cellNumYScaled);
-        center(dimsX, graphsMin.x, graphsMax.x, dimStep.x);
-        center(dimsY, graphsMin.y, graphsMax.y, dimStep.y);
-        centerAxis = calcCenterAxis(dimsX, dimsY);
+        scaleStep.x = calcScaleStep(dif, minCellNum);
+        scaleStep.y = calcScaleStep(dif, minCellNum);
+        scalesX = calcScale(graphsMin.x, scaleStep.x, cellNumXScaled);
+        scalesY = calcScale(graphsMin.y, scaleStep.y, cellNumYScaled);
+        center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);
+        center(scalesY, graphsMin.y, graphsMax.y, scaleStep.y);
+        centerAxis = calcCenterAxis();
         normalize();
     }
 
@@ -560,6 +572,13 @@ public class Graph {
 
     public void setAxisLineWidth(float lineWidth) {
         axisLineWidth = lineWidth;
+    }
+
+    public void setAxisScaleLinesLength(float top, float bottom, float left, float right) {
+        scaleLineTopLength = top;
+        scaleLineBottomLength = bottom;
+        scaleLineLeftLength = left;
+        scaleLineRightLength = right;
     }
 
     public void setFontSize(int size) {
