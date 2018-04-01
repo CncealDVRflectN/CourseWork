@@ -42,10 +42,13 @@ public class Graph {
     private float markupLineWidth;
     private float axisLineWidth;
 
-    private float scaleLineTopLength;
-    private float scaleLineBottomLength;
-    private float scaleLineLeftLength;
-    private float scaleLineRightLength;
+    private float scaleMarkLineTopLength;
+    private float scaleMarkLineBottomLength;
+    private float scaleMarkLineLeftLength;
+    private float scaleMarkLineRightLength;
+
+    private Vector2 horizontalScaleMarkOffset;
+    private Vector2 verticalScaleMarkOffset;
 
     private Vector2 centerAxis;
     private Vector2 centerAxisNorm;
@@ -74,10 +77,13 @@ public class Graph {
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         font = AssetsManager.getFont(fontParam);
 
-        scaleLineTopLength = 4.0f;
-        scaleLineBottomLength = 4.0f;
-        scaleLineLeftLength = 4.0f;
-        scaleLineRightLength = 4.0f;
+        scaleMarkLineTopLength = 4.0f;
+        scaleMarkLineBottomLength = 4.0f;
+        scaleMarkLineLeftLength = 4.0f;
+        scaleMarkLineRightLength = 4.0f;
+
+        horizontalScaleMarkOffset = new Vector2(0.0f, 10.0f);
+        verticalScaleMarkOffset = new Vector2(10.0f, 0.0f);
 
         graphsAA = AntiAliasing.noAA;
 
@@ -145,7 +151,7 @@ public class Graph {
         return result;
     }
 
-    private float[] calcScale(float min, float scaleStep, int cellNum) {
+    private float[] calcScales(float min, float scaleStep, int cellNum) {
         float[] result;
         float minMul = min / scaleStep;
         int sign = (minMul >= 0.0f) ? 1 : -1;
@@ -180,7 +186,7 @@ public class Graph {
         }
     }
 
-    private Vector2 calcCenterAxis() {
+    private Vector2 calcAxisCenter() {
         Vector2 result = new Vector2();
 
         if (scalesX[1] <= 0.0f && scalesX[scalesX.length - 2] >= 0.0f) {
@@ -280,13 +286,13 @@ public class Graph {
 
         for (int i = 0; i < scalesXNorm.length; i++) {
             renderer.setColor(axisColor);
-            renderer.line(scalesXNorm[i] * width, centerAxisNorm.y * height - (scaleLineOffset + scaleLineBottomLength),
-                    scalesXNorm[i] * width, centerAxisNorm.y * height + (scaleLineOffset + scaleLineTopLength));
+            renderer.line(scalesXNorm[i] * width, centerAxisNorm.y * height - (scaleLineOffset + scaleMarkLineBottomLength),
+                    scalesXNorm[i] * width, centerAxisNorm.y * height + (scaleLineOffset + scaleMarkLineTopLength));
         }
 
         for (int i = 0; i < scalesYNorm.length; i++) {
-            renderer.line(centerAxisNorm.x * width - (scaleLineOffset + scaleLineLeftLength), scalesYNorm[i] * height,
-                    centerAxisNorm.x * width + (scaleLineOffset + scaleLineRightLength), scalesYNorm[i] * height);
+            renderer.line(centerAxisNorm.x * width - (scaleLineOffset + scaleMarkLineLeftLength), scalesYNorm[i] * height,
+                    centerAxisNorm.x * width + (scaleLineOffset + scaleMarkLineRightLength), scalesYNorm[i] * height);
         }
 
         renderer.end();
@@ -294,20 +300,22 @@ public class Graph {
         Gdx.gl30.glLineWidth(1.0f);
     }
 
-    private void drawScales(int width, int height) {
+    private void drawScalesMarks(int width, int height) {
         batch.setShader(SpriteBatch.createDefaultShader());
 
         batch.begin();
 
         for (int i = 0; i < scalesXNorm.length; i++) {
             if (scalesX[i] != centerAxis.x) {
-                font.draw(batch, Float.toString(scalesX[i]), scalesXNorm[i] * width, centerAxisNorm.y * height - 10.0f);
+                font.draw(batch, Float.toString(scalesX[i]), scalesXNorm[i] * width + horizontalScaleMarkOffset.x,
+                        centerAxisNorm.y * height - horizontalScaleMarkOffset.y);
             }
         }
 
         for (int i = 0; i < scalesYNorm.length; i++) {
             if (scalesY[i] != centerAxis.y) {
-                font.draw(batch, Float.toString(scalesY[i]), centerAxisNorm.x * width + 10.0f, scalesYNorm[i] * height);
+                font.draw(batch, Float.toString(scalesY[i]), centerAxisNorm.x * width + verticalScaleMarkOffset.x,
+                        scalesYNorm[i] * height + verticalScaleMarkOffset.y);
             }
         }
 
@@ -331,7 +339,7 @@ public class Graph {
 
         drawBackground(width, height);
         drawAxis(width, height);
-        drawScales(width, height);
+        drawScalesMarks(width, height);
 
         fbo.end();
 
@@ -401,11 +409,11 @@ public class Graph {
         dif = (cellNumXScaled > cellNumYScaled) ? graphsMax.y - graphsMin.y : graphsMax.x - graphsMin.x;
         scaleStep.x = calcScaleStep(dif, minCellNum);
         scaleStep.y = calcScaleStep(dif, minCellNum);
-        scalesX = calcScale(graphsMin.x, scaleStep.x, cellNumXScaled);
-        scalesY = calcScale(graphsMin.y, scaleStep.y, cellNumYScaled);
+        scalesX = calcScales(graphsMin.x, scaleStep.x, cellNumXScaled);
+        scalesY = calcScales(graphsMin.y, scaleStep.y, cellNumYScaled);
         center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);
         center(scalesY, graphsMin.y, graphsMax.y, scaleStep.y);
-        centerAxis = calcCenterAxis();
+        centerAxis = calcAxisCenter();
         normalize();
     }
 
@@ -574,11 +582,27 @@ public class Graph {
         axisLineWidth = lineWidth;
     }
 
-    public void setAxisScaleLinesLength(float top, float bottom, float left, float right) {
-        scaleLineTopLength = top;
-        scaleLineBottomLength = bottom;
-        scaleLineLeftLength = left;
-        scaleLineRightLength = right;
+    public void setAxisScaleMarkLinesLength(float top, float bottom, float left, float right) {
+        scaleMarkLineTopLength = top;
+        scaleMarkLineBottomLength = bottom;
+        scaleMarkLineLeftLength = left;
+        scaleMarkLineRightLength = right;
+    }
+
+    public void setHorizontalScaleMarkOffset(Vector2 offset) {
+        horizontalScaleMarkOffset.set(offset);
+    }
+
+    public void setHorizontalScaleMarkOffset(float x, float y) {
+        horizontalScaleMarkOffset.set(x, y);
+    }
+
+    public void setVerticalScaleMarkOffset(Vector2 offset) {
+        verticalScaleMarkOffset.set(offset);
+    }
+
+    public void setVerticalScaleMarkOffset(float x, float y) {
+        verticalScaleMarkOffset.set(x, y);
     }
 
     public void setFontSize(int size) {
