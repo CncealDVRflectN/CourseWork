@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
@@ -300,24 +301,60 @@ public class Graph {
         Gdx.gl30.glLineWidth(1.0f);
     }
 
-    private void drawScalesMarks(int width, int height) {
+    private void drawScaleMarks(int width, int height) {
+        GlyphLayout scaleMark = new GlyphLayout();
+        Vector2 curOffset = new Vector2();
+        float horScaleMarksOffsetSign;
+        float vertScaleMarksOffsetSign;
+        float additionalOffset = axisLineWidth / 2.0f;
+
+        horScaleMarksOffsetSign = (centerAxisNorm.y <= 0.5f) ? -1.0f : 1.0f;
+        vertScaleMarksOffsetSign = (centerAxisNorm.x >= 0.5f) ? 1.0f : -1.0f;
+
         batch.setShader(SpriteBatch.createDefaultShader());
 
         batch.begin();
 
         for (int i = 0; i < scalesXNorm.length; i++) {
             if (scalesX[i] != centerAxis.x) {
-                font.draw(batch, Float.toString(scalesX[i]), scalesXNorm[i] * width + horizontalScaleMarkOffset.x,
-                        centerAxisNorm.y * height - horizontalScaleMarkOffset.y);
+                scaleMark.setText(font, Float.toString(scalesX[i]));
+
+                curOffset.y = additionalOffset;
+                curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
+                curOffset.x = -scaleMark.width / 2.0f;
+
+                font.draw(batch, scaleMark, scalesXNorm[i] * width + horizontalScaleMarkOffset.x + curOffset.x,
+                        centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
             }
         }
 
         for (int i = 0; i < scalesYNorm.length; i++) {
             if (scalesY[i] != centerAxis.y) {
-                font.draw(batch, Float.toString(scalesY[i]), centerAxisNorm.x * width + verticalScaleMarkOffset.x,
-                        scalesYNorm[i] * height + verticalScaleMarkOffset.y);
+                scaleMark.setText(font, Float.toString(scalesY[i]));
+
+                curOffset.x = additionalOffset;
+                curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
+                curOffset.y = scaleMark.height / 2.0f;
+
+                font.draw(batch, scaleMark, centerAxisNorm.x * width +
+                                vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
+                        scalesYNorm[i] * height + verticalScaleMarkOffset.y + curOffset.y);
             }
         }
+
+        if (centerAxis.x == centerAxis.y) {
+            scaleMark.setText(font, Float.toString(centerAxis.x));
+        } else {
+            scaleMark.setText(font, Float.toString(centerAxis.x) + ", " + Float.toString(centerAxis.y));
+        }
+
+        curOffset.set(additionalOffset, additionalOffset);
+        curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
+        curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
+
+        font.draw(batch, scaleMark, centerAxisNorm.x * width +
+                        vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
+                centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
 
         batch.end();
     }
@@ -339,7 +376,7 @@ public class Graph {
 
         drawBackground(width, height);
         drawAxis(width, height);
-        drawScalesMarks(width, height);
+        drawScaleMarks(width, height);
 
         fbo.end();
 

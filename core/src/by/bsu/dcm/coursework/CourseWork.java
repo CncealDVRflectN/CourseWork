@@ -81,8 +81,6 @@ public class CourseWork extends ApplicationAdapter {
         graph.addGraph(squared);
 
         graph.setAntialiasing(Graph.AntiAliasing.SSAA4_FXAA);
-        graph.setHorizontalScaleMarkOffset(-8.0f, 10.0f);
-        graph.setVerticalScaleMarkOffset(10.0f, 3.0f);
     }
 
     @Override
