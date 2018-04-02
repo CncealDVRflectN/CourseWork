@@ -4,6 +4,7 @@ import by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 import by.bsu.dcm.coursework.graphs.Graph;
 import by.bsu.dcm.coursework.graphs.GraphPoints;
 import by.bsu.dcm.coursework.math.Axisymmetric;
+import by.bsu.dcm.coursework.math.Flat;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL30;
@@ -15,27 +16,34 @@ public class CourseWork extends ApplicationAdapter {
     private Graph graph;
     private TextureRegion graphResult;
     private Axisymmetric axisymmetric;
+    private Flat flat;
 
     @Override
     public void create() {
         GraphPoints axisymmetricPoints;
+        GraphPoints flatPoints;
         batch = new SpriteBatch();
         graph = new Graph();
-        axisymmetric = new Axisymmetric();
+        axisymmetric = new Axisymmetric(Math.PI / 4.0, 0.0, 0.00001, 100);
+        flat = new Flat(Math.PI / 4.0, 0.0, 0.00001, 100);
 
-        axisymmetric.setAlpha(Math.PI / 4.0);
-        axisymmetric.setBond(0.0);
-        axisymmetric.setEpsilon(0.00001);
-        axisymmetric.setNodesNum(101);
+        graph.setAntialiasing(AntiAliasing.SSAA4_FXAA);
+
         axisymmetric.calcResult();
-
         axisymmetricPoints = axisymmetric.getGraphPoints();
         axisymmetricPoints.pointSize = 2.0f;
         axisymmetricPoints.pointColor.set(1.0f, 0.0f, 0.0f, 0.75f);
         axisymmetricPoints.lineWidth = 2.0f;
         axisymmetricPoints.lineColor.set(1.0f, 0.0f, 0.0f, 0.75f);
+        graph.addGraph(axisymmetricPoints);
 
-        graph.addGraph(axisymmetric.getGraphPoints());
+        flat.calcResult();
+        flatPoints = flat.getGraphPoints();
+        flatPoints.pointSize = 2.0f;
+        flatPoints.pointColor.set(0.0f, 0.0f, 1.0f, 0.75f);
+        flatPoints.lineWidth = 2.0f;
+        flatPoints.lineColor.set(0.0f, 0.0f, 1.0f, 0.75f);
+        graph.addGraph(flatPoints);
 
         graphResult = graph.getGraph(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }

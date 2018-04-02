@@ -1,130 +1,130 @@
 package by.bsu.dcm.coursework.math;
 
-public class Flat {
-    private double step;
-    private double alpha;
-    private double bond;
-    private double epsilon;
-    private double[] rightPart;
-    private double[][] leftPart;
-    private double[] previousApproximation;
-    private double[] nextApproximation;
-    private int N;
-    private double[] alphas;
-    private double[] betas;
+import by.bsu.dcm.coursework.graphs.GraphPoints;
+import com.badlogic.gdx.math.Vector2;
 
-    Flat(double alpha, double bond, double epsilon, int N){
+public class Flat {
+    private class Integrand implements Function {
+        private double[] approx;
+
+        @Override
+        public double calc(int index) {
+            return approx[index];
+        }
+
+        @Override
+        public int getLength() {
+            return approx.length;
+        }
+
+        public void setApprox(double[] approx) {
+            this.approx = approx;
+        }
+    }
+
+    private final Integrand integrand;
+
+    private double epsilon;
+    private double bond;
+    private double alpha;
+    private int splitNum;
+
+    private GraphPoints graphPoints;
+
+    public Flat(double alpha, double bond, double epsilon, int splitNum){
+        integrand = new Integrand();
+        graphPoints = new GraphPoints();
+
         this.alpha = alpha;
         this.bond = bond;
         this.epsilon = epsilon;
-        this.N = N;
-        this.step = 1.0 / N;
+        this.splitNum = splitNum;
     }
 
-    public static double norm(double[] a, double[] b){
-        double ans = Math.abs(a[0] - b[0]);
-        for (int i = 1; i < a.length; i++){
-            ans = Math.max(ans, Math.abs(a[i] - b[i]));
+    private double[] calcNextApproximation(double[] prevApprox, double step){
+        double[][] leftPart = new double[splitNum + 1][splitNum + 1];
+        double[] rightPart = new double[splitNum + 1];
+        double coef = 8.0 * step;
+        double integral;
+
+        integrand.setApprox(prevApprox);
+
+        integral = 2.0 * Util.calcIntegralTrapeze(integrand, step);
+
+        leftPart[0][0] = -(1.0 - (bond * step * step) / (2.0 * integral));
+        leftPart[0][1] = 1.0;
+        leftPart[splitNum][splitNum] = 1.0;
+
+        rightPart[0] = (step * step / 2.0) * (-bond / 2.0 - Math.sin(alpha));
+        rightPart[splitNum] = 0;
+
+        for (int i = 1; i < splitNum; i++) {
+            leftPart[i][i - 1] = coef;
+            leftPart[i][i] = -2.0 * coef;
+            leftPart[i][i + 1] = coef;
+
+            rightPart[i] = Math.pow(4.0 * step * step + Math.pow(prevApprox[i + 1] - prevApprox[i - 1], 2.0) , 3.0 / 2.0) *
+                    (bond * prevApprox[i] / integral - bond / 2.0 - Math.sin(alpha));
         }
-        return ans;
+
+        return Util.calcRightSweep(leftPart, rightPart);
     }
 
-    public double calculateIntegral(double[] y){
-        double ans = 0;
-        ans += step * y[0] / 2;
-        for (int i = 1; i < y.length - 1; i++){
-            ans += step * y[i];
+    private double[] calcInitialValues(double[] nodes) {
+        double[] init = new double[splitNum + 1];
+
+        for (int i = 0; i < init.length; i++) {
+            init[i] = Math.sqrt(1.0 - Math.pow(nodes[i], 2.0));
         }
-        return ans * 2;
+
+        return init;
     }
 
-    public void createLeftPart(){
-        leftPart = new double[N + 1][N + 1];
-        leftPart[0][0] = -(1 - bond * step * step / 2 / calculateIntegral(previousApproximation));
-        leftPart[0][1] = 1;
-        leftPart[N][N] = 1;
-        for (int i = 1; i < N; i++) {
-            leftPart[i][i - 1] = - 8 * step;
-            leftPart[i][i] = -2 * 8 * step;
-            leftPart[i][i + 1] = - 8 * step;
+    public void calcResult() {
+        Vector2[] points = new Vector2[splitNum + 1];
+        double[] nodes = new double[splitNum + 1];
+        double[] prevApprox;
+        double[] nextApprox;
+        double step = 1.0 / splitNum;
+        int iterations = 0;
+
+        for (int i = 0; i < nodes.length; i++) {
+            nodes[i] = i * step;
         }
-    }
 
-    public void createRightPart(){
-        rightPart = new double[N + 1];
-        rightPart[0] = step * step / 2 * (-bond / 2 - Math.sin(alpha));
-        rightPart[N] = 0;
-        for (int i = 1; i < N; i++){
-            rightPart[i] = Math.pow(4 * step * step + Math.pow(previousApproximation[i + 1] - previousApproximation[i - 1], 2) , 3.0 / 2.0) *
-                    (bond * previousApproximation[i] / calculateIntegral(previousApproximation) - bond / 2 - Math.sin(alpha));
+        nextApprox = calcInitialValues(nodes);
+
+        do {
+            prevApprox = nextApprox;
+            nextApprox = calcNextApproximation(prevApprox, step);
+            iterations++;
+        } while(Util.norm(nextApprox, prevApprox) >= epsilon);
+
+        for (int i = 0; i < points.length; i++) {
+            points[i] = new Vector2((float)nodes[i], (float) nextApprox[i]);
         }
-    }
-    public double getNode(int index){
-        return index * step;
+        graphPoints.points = points;
+
+        System.out.println("Flat iterations result: " + iterations);
     }
 
-    public void setApproximations(){
-        previousApproximation = new double[N + 1];
-        nextApproximation = new double[N + 1];
-        for (int i = 0; i < N + 1; i++){
-            nextApproximation[i] =
-                    Math.sqrt(1 - Math.pow(getNode(i), 2));
-        }
+    public GraphPoints getGraphPoints() {
+        return graphPoints;
     }
 
-    public void copyApproximation(){
-        previousApproximation = nextApproximation.clone();
+    public void setEpsilon(double epsilon) {
+        this.epsilon = epsilon;
     }
 
-    public void calculateNextApproximation(){
-        calculateAlphas();
-        calculateBetas();
-        calculateSolution();
+    public void setBond(double bond) {
+        this.bond = bond;
     }
 
-    private void calculateAlphas() {
-        alphas = new double[N + 1];
-        alphas[1] = -leftPart[0][1] / leftPart[0][0];
-        for (int i = 1; i < N; i++) {
-            alphas[i + 1] = leftPart[i][i + 1] / (leftPart[i][i] - leftPart[i][i - 1] * alphas[i]);
-        }
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
     }
 
-    private void calculateBetas() {
-        betas = new double[N + 2];
-        betas[1] = rightPart[0] / leftPart[0][0];
-        for (int i = 1; i <= N; i++) {
-            betas[i + 1] = (rightPart[i] + betas[i] * (leftPart[i][i - 1])) / (leftPart[i][i] - alphas[i] * leftPart[i][i - 1]);
-        }
-    }
-
-    private void calculateSolution() {
-        nextApproximation = new double[N + 1];
-        nextApproximation[N] = betas[N + 1];
-        for (int i = N - 1; i >= 0; i--) {
-            nextApproximation[i] = alphas[i + 1] * nextApproximation[i + 1] + betas[i + 1];
-        }
-    }
-
-    public void printSolution(){
-        for (double v : nextApproximation) {
-            System.out.print(v + " ");
-        }
-    }
-
-    public static void main(String[] args) {
-        Flat flat = new Flat(Math.PI / 4, 0, 0.00001, 100);
-        flat.setApproximations();
-        int numberOfIterations = 0;
-        while (Flat.norm(flat.nextApproximation, flat.previousApproximation) >= flat.epsilon){
-            flat.copyApproximation();
-            flat.createLeftPart();
-            flat.createRightPart();
-            flat.calculateNextApproximation();
-            numberOfIterations++;
-        }
-        flat.printSolution();
-        System.out.println();
-        System.out.println(numberOfIterations);
+    public void setSplitNum(int num) {
+        splitNum = num;
     }
 }
