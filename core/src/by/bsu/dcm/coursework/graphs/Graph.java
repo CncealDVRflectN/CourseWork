@@ -431,15 +431,16 @@ public class Graph {
     }
 
     private void calcParams(float scaleX, float scaleY) {
+        Vector2 dif = new Vector2();
+        Vector2 ratio = new Vector2();
         int cellNumXScaled = Math.round(DEFAULT_CELL_NUM_X * scaleX);
         int cellNumYScaled = Math.round(DEFAULT_CELL_NUM_Y * scaleY);
-        int minCellNum = Math.min(cellNumXScaled, cellNumYScaled);
-        float dif;
 
         calcMinMax();
-        dif = (cellNumXScaled > cellNumYScaled) ? graphsMax.y - graphsMin.y : graphsMax.x - graphsMin.x;
-        scaleStep.x = calcScaleStep(dif, minCellNum);
-        scaleStep.y = calcScaleStep(dif, minCellNum);
+        dif.set(graphsMax.x - graphsMin.x, graphsMax.y - graphsMin.y);
+        ratio.set(dif.x / cellNumXScaled, dif.y / cellNumYScaled);
+        scaleStep.x = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
+        scaleStep.y = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
         scalesX = calcScales(graphsMin.x, scaleStep.x, cellNumXScaled);
         scalesY = calcScales(graphsMin.y, scaleStep.y, cellNumYScaled);
         center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);

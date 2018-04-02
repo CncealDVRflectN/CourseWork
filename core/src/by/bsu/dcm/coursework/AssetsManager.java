@@ -12,6 +12,8 @@ public final class AssetsManager {
     private static ShaderProgram graphFXAAShader;
     private static FreeTypeFontGenerator fontGenerator;
 
+    private AssetsManager() {}
+
     public static ShaderProgram getGraphBlendShader() {
         if (graphBlendShader == null) {
             graphBlendShader = new ShaderProgram(Gdx.files.internal("shaders/default.vert"),
