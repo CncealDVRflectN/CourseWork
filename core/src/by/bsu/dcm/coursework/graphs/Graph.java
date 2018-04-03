@@ -17,8 +17,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Graph {
     private static final short DEFAULT_WIDTH = 1280;
@@ -29,11 +32,12 @@ public class Graph {
 
     private AntiAliasing graphsAA;
 
+    private FreeTypeFontParameter fontParam;
+    private BitmapFont font;
+    private DecimalFormat decimalFormat;
     private Color backgroundColor;
     private Color markupColor;
     private Color axisColor;
-    private FreeTypeFontParameter fontParam;
-    private BitmapFont font;
     private float markupLineWidth;
     private float axisLineWidth;
 
@@ -63,6 +67,7 @@ public class Graph {
 
     public Graph() {
         fontParam = new FreeTypeFontParameter();
+        decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
         backgroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
         markupColor = new Color(0.75f, 0.75f, 0.75f, 1.0f);
         axisColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
@@ -70,6 +75,7 @@ public class Graph {
         axisLineWidth = 1.0f;
         fontParam.size = 12;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+
         font = AssetsManager.getFont(fontParam);
 
         scaleMarkLineTopLength = 4.0f;
@@ -295,9 +301,26 @@ public class Graph {
         Gdx.gl30.glLineWidth(1.0f);
     }
 
+    private String calcScaleMarkFormat(float scaleStep) {
+        StringBuilder format = new StringBuilder("#0");
+        float remainder = scaleStep % 1.0f;
+
+        if (remainder != 0.0f) {
+            format.append('.');
+            while (remainder != 0.0f) {
+                scaleStep *= 10.0f;
+                remainder = scaleStep % 1.0f;
+                format.append('0');
+            }
+        }
+
+        return format.toString();
+    }
+
     private void drawScaleMarks(int width, int height) {
         GlyphLayout scaleMark = new GlyphLayout();
         Vector2 curOffset = new Vector2();
+        String centerXMark;
         float horScaleMarksOffsetSign;
         float vertScaleMarksOffsetSign;
         float additionalOffset = axisLineWidth / 2.0f;
@@ -309,9 +332,10 @@ public class Graph {
 
         batch.begin();
 
+        decimalFormat.applyPattern(calcScaleMarkFormat(scaleStep.x));
         for (int i = 0; i < scalesXNorm.length; i++) {
             if (scalesX[i] != centerAxis.x) {
-                scaleMark.setText(font, Float.toString(scalesX[i]));
+                scaleMark.setText(font, decimalFormat.format(scalesX[i]));
 
                 curOffset.y = additionalOffset;
                 curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
@@ -322,9 +346,10 @@ public class Graph {
             }
         }
 
+        decimalFormat.applyPattern(calcScaleMarkFormat(scaleStep.y));
         for (int i = 0; i < scalesYNorm.length; i++) {
             if (scalesY[i] != centerAxis.y) {
-                scaleMark.setText(font, Float.toString(scalesY[i]));
+                scaleMark.setText(font, decimalFormat.format(scalesY[i]));
 
                 curOffset.x = additionalOffset;
                 curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
@@ -336,10 +361,13 @@ public class Graph {
             }
         }
 
+        decimalFormat.applyPattern(calcScaleMarkFormat(centerAxis.x));
+        centerXMark = decimalFormat.format(centerAxis.x);
         if (centerAxis.x == centerAxis.y) {
-            scaleMark.setText(font, Float.toString(centerAxis.x));
+            scaleMark.setText(font, centerXMark);
         } else {
-            scaleMark.setText(font, Float.toString(centerAxis.x) + ", " + Float.toString(centerAxis.y));
+            decimalFormat.applyPattern(calcScaleMarkFormat(centerAxis.y));
+            scaleMark.setText(font, centerXMark + ", " + decimalFormat.format(centerAxis.y));
         }
 
         curOffset.set(additionalOffset, additionalOffset);
