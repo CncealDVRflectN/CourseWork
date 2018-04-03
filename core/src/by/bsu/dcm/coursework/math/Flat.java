@@ -1,10 +1,9 @@
 package by.bsu.dcm.coursework.math;
 
-import by.bsu.dcm.coursework.graphs.GraphPoints;
 import com.badlogic.gdx.math.Vector2;
 
-public class Flat {
-    private class Integrand implements Function {
+public class Flat extends EquilibriumFluid {
+    private static class Integrand implements Function {
         private double[] approx;
 
         @Override
@@ -17,37 +16,27 @@ public class Flat {
             return approx.length;
         }
 
-        public void setApprox(double[] approx) {
-            this.approx = approx;
+        @Override
+        public void setParams(Object... params) {
+            this.approx = (double[]) params[0];
         }
     }
 
-    private final Integrand integrand;
-
-    private double epsilon;
-    private double bond;
-    private double alpha;
-    private int splitNum;
-
-    private GraphPoints graphPoints;
-
-    public Flat(double alpha, double bond, double epsilon, int splitNum){
-        integrand = new Integrand();
-        graphPoints = new GraphPoints();
-
-        this.alpha = alpha;
-        this.bond = bond;
-        this.epsilon = epsilon;
-        this.splitNum = splitNum;
+    public Flat() {
+        this(0.0, 0.0, 0.0, 0);
     }
 
-    private double[] calcNextApproximation(double[] prevApprox, double step){
+    public Flat(double alpha, double bond, double epsilon, int splitNum) {
+        super(new Integrand(), alpha, bond, epsilon, splitNum);
+    }
+
+    private double[] calcNextApproximation(double[] prevApprox, double step) {
         double[][] leftPart = new double[splitNum + 1][splitNum + 1];
         double[] rightPart = new double[splitNum + 1];
         double coef = 8.0 * step;
         double integral;
 
-        integrand.setApprox(prevApprox);
+        integrand.setParams(prevApprox);
 
         integral = 2.0 * Util.calcIntegralTrapeze(integrand, step);
 
@@ -63,14 +52,14 @@ public class Flat {
             leftPart[i][i] = -2.0 * coef;
             leftPart[i][i + 1] = coef;
 
-            rightPart[i] = Math.pow(4.0 * step * step + Math.pow(prevApprox[i + 1] - prevApprox[i - 1], 2.0) , 3.0 / 2.0) *
+            rightPart[i] = Math.pow(4.0 * step * step + Math.pow(prevApprox[i + 1] - prevApprox[i - 1], 2.0), 3.0 / 2.0) *
                     (bond * prevApprox[i] / integral - bond / 2.0 - Math.sin(alpha));
         }
 
         return Util.calcRightSweep(leftPart, rightPart);
     }
 
-    private double[] calcInitialValues(double[] nodes) {
+    private double[] calcInitialApproximation(double[] nodes) {
         double[] init = new double[splitNum + 1];
 
         for (int i = 0; i < init.length; i++) {
@@ -80,6 +69,7 @@ public class Flat {
         return init;
     }
 
+    @Override
     public void calcResult() {
         Vector2[] points = new Vector2[splitNum + 1];
         double[] nodes = new double[splitNum + 1];
@@ -92,39 +82,19 @@ public class Flat {
             nodes[i] = i * step;
         }
 
-        nextApprox = calcInitialValues(nodes);
+        nextApprox = calcInitialApproximation(nodes);
 
         do {
             prevApprox = nextApprox;
             nextApprox = calcNextApproximation(prevApprox, step);
             iterations++;
-        } while(Util.norm(nextApprox, prevApprox) >= epsilon);
+        } while (Util.norm(nextApprox, prevApprox) >= epsilon);
 
         for (int i = 0; i < points.length; i++) {
-            points[i] = new Vector2((float)nodes[i], (float) nextApprox[i]);
+            points[i] = new Vector2((float) nodes[i], (float) nextApprox[i]);
         }
         graphPoints.points = points;
 
         System.out.println("Flat iterations result: " + iterations);
-    }
-
-    public GraphPoints getGraphPoints() {
-        return graphPoints;
-    }
-
-    public void setEpsilon(double epsilon) {
-        this.epsilon = epsilon;
-    }
-
-    public void setBond(double bond) {
-        this.bond = bond;
-    }
-
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    public void setSplitNum(int num) {
-        splitNum = num;
     }
 }

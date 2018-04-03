@@ -1,10 +1,9 @@
 package by.bsu.dcm.coursework.math;
 
-import by.bsu.dcm.coursework.graphs.GraphPoints;
 import com.badlogic.gdx.math.Vector2;
 
-public class Axisymmetric {
-    private class Integrand implements Function {
+public class Axisymmetric extends EquilibriumFluid {
+    private static class Integrand implements Function {
         private double[] approx;
         private double[] nodes;
 
@@ -18,32 +17,19 @@ public class Axisymmetric {
             return nodes.length;
         }
 
-        public void setApprox(double[] approx) {
-            this.approx = approx;
-        }
-
-        public void setNodes(double[] nodes) {
-            this.nodes = nodes;
+        @Override
+        public void setParams(Object... params) {
+            this.approx = (double[]) params[0];
+            this.nodes = (double[]) params[1];
         }
     }
 
-    private final Integrand integrand;
-
-    private double epsilon;
-    private double bond;
-    private double alpha;
-    private int splitNum;
-
-    private GraphPoints graphPoints;
+    public Axisymmetric() {
+        this(0.0, 0.0, 0.0, 0);
+    }
 
     public Axisymmetric(double alpha, double bond, double epsilon, int splitNum) {
-        integrand = new Integrand();
-        graphPoints = new GraphPoints();
-
-        this.alpha = alpha;
-        this.bond = bond;
-        this.epsilon = epsilon;
-        this.splitNum = splitNum;
+        super(new Integrand(), alpha, bond, epsilon, splitNum);
     }
 
     private double[] calcCoefs(double[] prevApprox, double[] nodes, double step) {
@@ -66,8 +52,7 @@ public class Axisymmetric {
         double integral;
         double q;
 
-        integrand.setApprox(prevApprox);
-        integrand.setNodes(nodes);
+        integrand.setParams(prevApprox, nodes);
 
         integral = 2.0 * Math.PI * Util.calcIntegralTrapeze(integrand, step);
         q = -2.0 * Math.sin(alpha) - bond * Math.pow(integral, 1.0 / 3.0) / Math.PI;
@@ -100,6 +85,7 @@ public class Axisymmetric {
         return init;
     }
 
+    @Override
     public void calcResult() {
         Vector2[] points = new Vector2[splitNum + 1];
         double[] nodes = new double[splitNum + 1];
@@ -121,30 +107,10 @@ public class Axisymmetric {
         } while (Util.norm(nextApprox, prevApprox) > epsilon);
 
         for (int i = 0; i < nodes.length; i++) {
-            points[i] = new Vector2((float)nodes[i], (float)nextApprox[i]);
+            points[i] = new Vector2((float) nodes[i], (float) nextApprox[i]);
         }
         graphPoints.points = points;
 
         System.out.println("Axisymmetric iterations num: " + interations);
-    }
-
-    public GraphPoints getGraphPoints() {
-        return graphPoints;
-    }
-
-    public void setEpsilon(double epsilon) {
-        this.epsilon = epsilon;
-    }
-
-    public void setBond(double bond) {
-        this.bond = bond;
-    }
-
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    public void setSplitNum(int num) {
-        splitNum = num;
     }
 }
