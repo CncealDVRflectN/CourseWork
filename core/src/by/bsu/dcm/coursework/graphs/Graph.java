@@ -463,12 +463,13 @@ public class Graph {
         Vector2 ratio = new Vector2();
         int cellNumXScaled = Math.round(DEFAULT_CELL_NUM_X * scaleX);
         int cellNumYScaled = Math.round(DEFAULT_CELL_NUM_Y * scaleY);
+        float scaleStepCalc;
 
         calcMinMax();
         dif.set(graphsMax.x - graphsMin.x, graphsMax.y - graphsMin.y);
         ratio.set(dif.x / cellNumXScaled, dif.y / cellNumYScaled);
-        scaleStep.x = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
-        scaleStep.y = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
+        scaleStepCalc = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
+        scaleStep.set(scaleStepCalc, scaleStepCalc);
         scalesX = calcScales(graphsMin.x, scaleStep.x, cellNumXScaled);
         scalesY = calcScales(graphsMin.y, scaleStep.y, cellNumYScaled);
         center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);
@@ -496,7 +497,7 @@ public class Graph {
         TextureRegion coordsSystem;
         TextureRegion graphsTex;
 
-        calcParams(width / DEFAULT_WIDTH, height / DEFAULT_HEIGHT);
+        calcParams((float) width / (float) DEFAULT_WIDTH, (float) height / (float) DEFAULT_HEIGHT);
         coordsSystem = generateCoordsSystem(width, height);
         graphsTex = generateGraphs(width, height);
 
@@ -532,6 +533,10 @@ public class Graph {
         result.flip(false, true);
 
         return result;
+    }
+
+    public void clear() {
+        graphs.clear();
     }
 
     public void addGraph(GraphPoints graph) {

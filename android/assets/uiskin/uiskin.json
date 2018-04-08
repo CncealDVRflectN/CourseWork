@@ -1,0 +1,186 @@
+{
+  com.badlogic.gdx.graphics.Color: {
+    green: {
+      a: 1,
+      b: 0,
+      g: 1,
+      r: 0
+    },
+    white: {
+      a: 1,
+      b: 1,
+      g: 1,
+      r: 1
+    },
+    red: {
+      a: 1,
+      b: 0,
+      g: 0,
+      r: 1
+    },
+    black: {
+      a: 1,
+      b: 0,
+      g: 0,
+      r: 0
+    },
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
+    dialogDim: {
+      name: white,
+      color: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 0.45
+      }
+    },
+    button-down: {
+      name: white,
+      color: {
+        r: 0.1,
+        g: 0.1,
+        b: 0.3,
+        a: 1
+      }
+    },
+    button-over: {
+      name: white,
+      color: {
+        r: 0.1,
+        g: 0.1,
+        b: 0.475,
+        a: 1
+      }
+    },
+    button-default: {
+      name: white,
+      color: {
+        r: 0.12,
+        g: 0.12,
+        b: 0.12,
+        a: 1
+      }
+    },
+    cursor: {
+      name: white,
+      color: {
+        r: 0.2,
+        g: 0.2,
+        b: 0.6,
+        a: 1
+      }
+    }
+    select-default: {
+      name: white,
+      color: {
+        r: 0.1,
+        g: 0.1,
+        b: 0.475,
+        a: 1
+      }
+    },
+    background-select-box-list: {
+      name: white,
+      color: {
+        r: 0.12,
+        g: 0.12,
+        b: 0.12,
+        a: 1
+      }
+    },
+    select-default: {
+      name: white,
+      color: {
+        r: 0.1,
+        g: 0.1,
+        b: 0.475,
+        a: 1
+      }
+    },
+    background-list: {
+      name: white,
+      color: {
+        r: 0.14,
+        g: 0.14,
+        b: 0.14,
+        a: 1
+      }
+    }
+  }
+  com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
+    default: {
+      down: button-down,
+      up: button-default,
+      over: button-over
+    },
+    toggle: {
+      down: button-down,
+      checked: button-down,
+      up: button-default
+      over: button-over
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+    default: {
+      down: button-down,
+      up: button-default,
+      over: button-over,
+      font: font,
+      fontColor: white
+    },
+    toggle: {
+      down: button-down,
+      up: button-default,
+      checked: button-down,
+      font: font,
+      fontColor: white,
+      downFontColor: white
+    }
+  }
+  com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+    default: {
+      font: font,
+      fontColor: white
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+    default: {
+      selection: select-default,
+      background: background-default,
+      font: font,
+      fontColor: white,
+      cursor: cursor
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.List$ListStyle: {
+    default: {
+      font: font,
+      fontColorUnselected: white,
+      selection: select-default,
+      fontColorSelected: white
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle: {
+    default: {
+      vScroll: scroll,
+      hScrollKnob: knob,
+      background: background-list,
+      hScroll: scroll,
+      vScrollKnob: knob
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
+    default: {
+      font: font,
+      fontColor: white,
+      background: select-box,
+      scrollStyle: default,
+      listStyle: {
+        font: font,
+        background: background-select-box-list,
+        selection: select-default
+      }
+    }
+  }
+}

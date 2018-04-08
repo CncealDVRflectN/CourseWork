@@ -27,6 +27,13 @@ public abstract class EquilibriumFluid {
         return graphPoints;
     }
 
+    public void setParams(double alpha, double bond, double epsilon, int splitNum) {
+        this.alpha = alpha;
+        this.bond = bond;
+        this.epsilon = epsilon;
+        this.splitNum = splitNum;
+    }
+
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
