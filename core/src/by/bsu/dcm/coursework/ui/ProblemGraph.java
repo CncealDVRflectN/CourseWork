@@ -49,6 +49,7 @@ public class ProblemGraph extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         if (graphResult != null) {
+            batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
             batch.draw(graphResult, getX(), getY());
         }
     }
