@@ -31,11 +31,14 @@ public class ProblemUI extends Table {
     }
 
     public void resize(int width, int height) {
+        float problemGraphWidth = width * (GRAPH_WEIGHT / (GRAPH_WEIGHT + SETTINGS_WEIGHT));
+
         setSize(width, height);
         getCell(problemGraph).width(width * (GRAPH_WEIGHT / (GRAPH_WEIGHT + SETTINGS_WEIGHT))).height(height);
         getCell(problemSettings).width(width * (SETTINGS_WEIGHT / (GRAPH_WEIGHT + SETTINGS_WEIGHT))).height(height);
 
         fontParam.size = Math.round(DEFAULT_FONT_SIZE * ((float) height / (float) DEFAULT_HEIGHT));
         problemSettings.setSkin(AssetsManager.getSkinUI(fontParam));
+        problemGraph.resize(Math.round(problemGraphWidth), height);
     }
 }

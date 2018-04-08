@@ -67,4 +67,10 @@ public class ProblemGraph extends Actor {
             graph.addGraph(this.flat.getGraphPoints());
         }
     }
+
+    public void resize(int width, int height) {
+        if (graphResult != null) {
+            graphResult = graph.getGraph(width, height);
+        }
+    }
 }
