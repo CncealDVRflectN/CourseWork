@@ -1,7 +1,5 @@
 package by.bsu.dcm.coursework;
 
-import by.bsu.dcm.coursework.math.Axisymmetric;
-import by.bsu.dcm.coursework.math.Flat;
 import by.bsu.dcm.coursework.ui.ProblemUI;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -16,7 +14,7 @@ public class CourseWork extends ApplicationAdapter {
     @Override
     public void create() {
         stage = new Stage(new ScreenViewport());
-        problemUI = new ProblemUI(new Axisymmetric(), new Flat());
+        problemUI = new ProblemUI();
 
         Gdx.input.setInputProcessor(stage);
 

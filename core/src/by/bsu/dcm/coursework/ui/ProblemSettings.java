@@ -1,6 +1,11 @@
 package by.bsu.dcm.coursework.ui;
 
 import by.bsu.dcm.coursework.AssetsManager;
+import by.bsu.dcm.coursework.graphs.GraphPoints;
+import by.bsu.dcm.coursework.math.fluid.Axisymmetric;
+import by.bsu.dcm.coursework.math.fluid.EquilibriumFluid;
+import by.bsu.dcm.coursework.math.fluid.Plain;
+import by.bsu.dcm.coursework.math.fluid.RelaxationParams;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -13,37 +18,69 @@ import static by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 
 public class ProblemSettings extends Table {
     private final String[] antialiasings = {"No AA", "FXAA", "SSAA4", "SSAA4 + FXAA"};
-    private final String[] problems = {"Axisymmetric", "Flat", "Axisymmetric + Flat"};
+    private final String[] problems = {"Axisymmetric", "Plain"};
 
-    private final ProblemGraph problemGraph;
+    private final ProblemPresentation presentation;
 
     private final Label problemLabel;
     private final Label antialiasingLabel;
     private final Label alphaLabel;
-    private final Label bondLabel;
+    private final Label bondTargetLabel;
+    private final Label bondStepLabel;
+    private final Label relaxationCoefLabel;
     private final Label epsilonLabel;
     private final Label splitNumLabel;
     private final TextField alphaField;
-    private final TextField bondField;
+    private final TextField bondTargetField;
+    private final TextField bondStepField;
+    private final TextField relaxationCoefField;
     private final TextField epsilonField;
     private final TextField splitNumField;
     private final TextButton generateButton;
     private final SelectBox<String> problemSelect;
     private final SelectBox<String> antialiasingSelect;
 
-    public ProblemSettings(ProblemGraph problemGraph, Skin skin) {
+    private EquilibriumFluid axisymmetric;
+    private EquilibriumFluid plain;
+    private EquilibriumFluid currentProblem;
+
+    private GraphPoints axisymmetricPoints;
+    private GraphPoints plainPoints;
+    private GraphPoints currentPoints;
+
+    public ProblemSettings(ProblemPresentation presentation, Skin skin) {
         super(skin);
 
-        this.problemGraph = problemGraph;
+        this.presentation = presentation;
+
+        axisymmetric = new Axisymmetric();
+        plain = new Plain();
+
+        axisymmetricPoints = new GraphPoints();
+        plainPoints = new GraphPoints();
+
+        axisymmetricPoints.pointSize = 2.0f;
+        axisymmetricPoints.pointColor.set(1.0f, 0.0f, 0.0f, 0.75f);
+        axisymmetricPoints.lineWidth = 2.0f;
+        axisymmetricPoints.lineColor.set(1.0f, 0.0f, 0.0f, 0.75f);
+
+        plainPoints.pointSize = 2.0f;
+        plainPoints.pointColor.set(0.0f, 0.0f, 1.0f, 0.75f);
+        plainPoints.lineWidth = 2.0f;
+        plainPoints.lineColor.set(0.0f, 0.0f, 1.0f, 0.75f);
 
         problemLabel = new Label("Select problem type:", skin);
         antialiasingLabel = new Label("Select antialiasing:", skin);
         alphaLabel = new Label("Contact angle:", skin);
-        bondLabel = new Label("Bond number:", skin);
+        bondTargetLabel = new Label("Target Bond number:", skin);
+        bondStepLabel = new Label("Relaxation Bond number step:", skin);
+        relaxationCoefLabel = new Label("Minimal relaxation coeficient:", skin);
         epsilonLabel = new Label("Accuracy:", skin);
         splitNumLabel = new Label("Number of splits:", skin);
         alphaField = new TextField("", skin);
-        bondField = new TextField("", skin);
+        bondTargetField = new TextField("", skin);
+        bondStepField = new TextField("", skin);
+        relaxationCoefField = new TextField("", skin);
         epsilonField = new TextField("", skin);
         splitNumField = new TextField("", skin);
         generateButton = new TextButton("Generate", skin);
@@ -61,12 +98,16 @@ public class ProblemSettings extends Table {
         layout.setText(generateButton.getStyle().font, generateButton.getText());
 
         alphaField.setMessageText("Enter contact angle");
-        bondField.setMessageText("Enter Bond number");
+        bondTargetField.setMessageText("Enter target Bond number");
+        bondStepField.setMessageText("Enter relaxation Bond number step");
+        relaxationCoefField.setMessageText("Enter minimal relaxation coeficient");
         epsilonField.setMessageText("Enter accuracy");
         splitNumField.setMessageText("Enter number of splits");
 
         alphaField.setTextFieldFilter(new FloatFieldFilter(false));
-        bondField.setTextFieldFilter(new FloatFieldFilter(false));
+        bondTargetField.setTextFieldFilter(new FloatFieldFilter(true));
+        bondStepField.setTextFieldFilter(new FloatFieldFilter(true));
+        relaxationCoefField.setTextFieldFilter(new FloatFieldFilter(true));
         epsilonField.setTextFieldFilter(new FloatFieldFilter(true));
         splitNumField.setTextFieldFilter(new IntegerFieldFilter(true));
 
@@ -77,8 +118,12 @@ public class ProblemSettings extends Table {
         add(problemSelect).row();
         add(alphaLabel).row();
         add(alphaField).row();
-        add(bondLabel).row();
-        add(bondField).row();
+        add(bondTargetLabel).row();
+        add(bondTargetField).row();
+        add(bondStepLabel).row();
+        add(bondStepField).row();
+        add(relaxationCoefLabel).row();
+        add(relaxationCoefField).row();
         add(epsilonLabel).row();
         add(epsilonField).row();
         add(splitNumLabel).row();
@@ -89,7 +134,9 @@ public class ProblemSettings extends Table {
         problemSelect.setItems(problems);
 
         antialiasingSelect.setSelected("No AA");
-        problemSelect.setSelected("Axisymmetric + Flat");
+        problemSelect.setSelected("Axisymmetric");
+        currentProblem = axisymmetric;
+        currentPoints = axisymmetricPoints;
 
         antialiasingSelect.addListener(new ChangeListener() {
             @Override
@@ -97,16 +144,16 @@ public class ProblemSettings extends Table {
                 if (!event.isHandled()) {
                     switch (antialiasingSelect.getSelected()) {
                         case "FXAA":
-                            problemGraph.setAntialiasing(AntiAliasing.FXAA);
+                            presentation.setAntialiasing(AntiAliasing.FXAA);
                             break;
                         case "SSAA4":
-                            problemGraph.setAntialiasing(AntiAliasing.SSAA4);
+                            presentation.setAntialiasing(AntiAliasing.SSAA4);
                             break;
                         case "SSAA4 + FXAA":
-                            problemGraph.setAntialiasing(AntiAliasing.SSAA4_FXAA);
+                            presentation.setAntialiasing(AntiAliasing.SSAA4_FXAA);
                             break;
                         default:
-                            problemGraph.setAntialiasing(AntiAliasing.noAA);
+                            presentation.setAntialiasing(AntiAliasing.noAA);
                     }
                 }
             }
@@ -118,13 +165,16 @@ public class ProblemSettings extends Table {
                 if (!event.isHandled()) {
                     switch (problemSelect.getSelected()) {
                         case "Axisymmetric":
-                            problemGraph.setVisible(true, false);
+                            currentProblem = axisymmetric;
+                            currentPoints = axisymmetricPoints;
                             break;
-                        case "Flat":
-                            problemGraph.setVisible(false, true);
+                        case "Plain":
+                            currentProblem = plain;
+                            currentPoints = plainPoints;
                             break;
                         default:
-                            problemGraph.setVisible(true, true);
+                            currentProblem = axisymmetric;
+                            currentPoints = axisymmetricPoints;
                     }
                 }
             }
@@ -134,18 +184,17 @@ public class ProblemSettings extends Table {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 ErrorDialog errorDialog;
-                double alpha;
-                double bond;
-                double epsilon;
-                int splitNum;
+                RelaxationParams relaxationParams = new RelaxationParams();
 
                 try {
-                    alpha = Double.valueOf(alphaField.getText());
-                    bond = Double.valueOf(bondField.getText());
-                    epsilon = Double.valueOf(epsilonField.getText());
-                    splitNum = Integer.valueOf(splitNumField.getText());
+                    relaxationParams.alpha = Double.valueOf(alphaField.getText());
+                    relaxationParams.bondTarget = Double.valueOf(bondTargetField.getText());
+                    relaxationParams.bondStep = Double.valueOf(bondStepField.getText());
+                    relaxationParams.relaxationCoefMin = Double.valueOf(relaxationCoefField.getText());
+                    relaxationParams.epsilon = Double.valueOf(epsilonField.getText());
+                    relaxationParams.splitNum = Integer.valueOf(splitNumField.getText());
 
-                    problemGraph.generateGraph(alpha, bond, epsilon, splitNum);
+                    presentation.generatePresentation(currentProblem, relaxationParams, currentPoints);
                 } catch (NumberFormatException e) {
                     errorDialog = AssetsManager.getErrorDialog();
                     getStage().addActor(errorDialog);
@@ -158,6 +207,8 @@ public class ProblemSettings extends Table {
                     errorDialog.setMessage(e.toString());
                     errorDialog.toFront();
                     errorDialog.setVisible(true);
+
+                    e.printStackTrace();
                 }
             }
         });

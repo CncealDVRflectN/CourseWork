@@ -107,7 +107,7 @@
         a: 1
       }
     }
-  }
+  },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
     default: {
       down: button-down,
@@ -117,7 +117,7 @@
     toggle: {
       down: button-down,
       checked: button-down,
-      up: button-default
+      up: button-default,
       over: button-over
     }
   },
@@ -137,7 +137,7 @@
       fontColor: white,
       downFontColor: white
     }
-  }
+  },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
     default: {
       font: font,
@@ -181,6 +181,12 @@
         background: background-select-box-list,
         selection: select-default
       }
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
+    default-horizontal: {
+      background: slider-background,
+      knob: slider-knob
     }
   }
 }
