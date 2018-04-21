@@ -15,6 +15,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 
 import static by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
+import static com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import static com.badlogic.gdx.scenes.scene2d.ui.SelectBox.SelectBoxStyle;
+import static com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import static com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 
 public class ProblemSettings extends Table {
     private final String[] antialiasings = {"No AA", "FXAA", "SSAA4", "SSAA4 + FXAA"};
@@ -212,5 +216,46 @@ public class ProblemSettings extends Table {
                 }
             }
         });
+    }
+
+    @Override
+    public void setSkin(Skin skin) {
+        LabelStyle labelStyle;
+        TextFieldStyle fieldStyle;
+        SelectBoxStyle selectStyle;
+        TextButtonStyle buttonStyle;
+
+        super.setSkin(skin);
+
+        labelStyle = skin.get(LabelStyle.class);
+        fieldStyle = skin.get(TextFieldStyle.class);
+        selectStyle = skin.get(SelectBoxStyle.class);
+        buttonStyle = skin.get(TextButtonStyle.class);
+
+        problemLabel.setStyle(labelStyle);
+        antialiasingLabel.setStyle(labelStyle);
+        alphaLabel.setStyle(labelStyle);
+        bondTargetLabel.setStyle(labelStyle);
+        bondStepLabel.setStyle(labelStyle);
+        relaxationCoefLabel.setStyle(labelStyle);
+        epsilonLabel.setStyle(labelStyle);
+        splitNumLabel.setStyle(labelStyle);
+        alphaField.setStyle(fieldStyle);
+        bondTargetField.setStyle(fieldStyle);
+        bondStepField.setStyle(fieldStyle);
+        relaxationCoefField.setStyle(fieldStyle);
+        epsilonField.setStyle(fieldStyle);
+        splitNumField.setStyle(fieldStyle);
+        problemSelect.setStyle(selectStyle);
+        antialiasingSelect.setStyle(selectStyle);
+        generateButton.setStyle(buttonStyle);
+    }
+
+    public void resize() {
+        GlyphLayout layout = new GlyphLayout();
+
+        layout.setText(generateButton.getStyle().font, generateButton.getText());
+
+        getCell(generateButton).width(2.0f * layout.width);
     }
 }

@@ -27,14 +27,13 @@ public class ProblemUI extends Table {
     }
 
     public void resize(int width, int height) {
-        float problemGraphWidth = width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT));
-
         setSize(width, height);
         getCell(presentation).width(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
         getCell(problemSettings).width(width * (SETTINGS_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
 
         fontParam.size = Math.round(DEFAULT_FONT_SIZE * ((float) height / (float) DEFAULT_HEIGHT));
         problemSettings.setSkin(AssetsManager.getSkinUI(fontParam));
-        presentation.resize();
+        problemSettings.resize();
+        presentation.resize(Math.round(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))), height);
     }
 }

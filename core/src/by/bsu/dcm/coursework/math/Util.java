@@ -1,7 +1,8 @@
 package by.bsu.dcm.coursework.math;
 
 public final class Util {
-    private Util() {}
+    private Util() {
+    }
 
     private static double[] calcAlpha(double[][] mtr) {
         double[] alpha = new double[mtr.length - 1];
@@ -89,25 +90,5 @@ public final class Util {
         }
 
         return max;
-    }
-
-    public static double[] vectMul(double[] vect, double mul) {
-        double[] result = new double[vect.length];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = vect[i] * mul;
-        }
-
-        return result;
-    }
-
-    public static double[] vectSum(double[] left, double[] right) {
-        double[] result = new double[left.length];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = left[i] + right[i];
-        }
-
-        return result;
     }
 }

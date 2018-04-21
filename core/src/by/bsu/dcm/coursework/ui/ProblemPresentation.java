@@ -47,10 +47,10 @@ public class ProblemPresentation extends Widget {
         graph.removeGraph(lastPoints);
     }
 
-    public void resize() {
+    public void resize(int width, int height) {
         if (result != null) {
             graph.addGraph(lastPoints);
-            resultGraph = graph.getGraph(Math.round(getWidth()), Math.round(getHeight()));
+            resultGraph = graph.getGraph(width, height);
             graph.removeGraph(lastPoints);
         }
     }

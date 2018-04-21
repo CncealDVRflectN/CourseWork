@@ -115,16 +115,12 @@ public final class AssetsManager {
     }
 
     public static Skin getSkinUI(FreeTypeFontParameter fontParameter) {
-        if (skinUI == null) {
+        if (skinUI == null || !compareFontParams(currentUIFontParam, fontParameter)) {
             skinUI = new Skin();
             currentUIFontParam = copyOfFontParams(fontParameter);
             skinUI.add("font", getFont(currentUIFontParam), BitmapFont.class);
             skinUI.addRegions(new TextureAtlas(Gdx.files.internal("uiskin/uiskin.atlas")));
             skinUI.load(Gdx.files.internal("uiskin/uiskin.json"));
-        }
-        if (!compareFontParams(currentUIFontParam, fontParameter)) {
-            currentUIFontParam = copyOfFontParams(fontParameter);
-            skinUI.add("font", getFont(currentUIFontParam), BitmapFont.class);
         }
 
         return skinUI;
