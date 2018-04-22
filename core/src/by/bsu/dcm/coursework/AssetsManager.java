@@ -116,6 +116,9 @@ public final class AssetsManager {
 
     public static Skin getSkinUI(FreeTypeFontParameter fontParameter) {
         if (skinUI == null || !compareFontParams(currentUIFontParam, fontParameter)) {
+            if (skinUI != null) {
+                skinUI.dispose();
+            }
             skinUI = new Skin();
             currentUIFontParam = copyOfFontParams(fontParameter);
             skinUI.add("font", getFont(currentUIFontParam), BitmapFont.class);

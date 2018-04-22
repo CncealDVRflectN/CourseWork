@@ -4,10 +4,12 @@ import by.bsu.dcm.coursework.AssetsManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Graphics {
     public enum AntiAliasing {
@@ -21,6 +23,7 @@ public class Graphics {
 
     public static TextureRegion calcDownsample4(TextureRegion texture) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, texture.getRegionWidth() / 2, texture.getRegionHeight() / 2, false);
+        Pixmap pixmap;
         TextureRegion result;
 
         BATCH.setShader(AssetsManager.getGraphDownsample4Shader());
@@ -39,18 +42,25 @@ public class Graphics {
         BATCH.draw(texture, 0.0f, 0.0f);
 
         BATCH.end();
+
+        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
+
         fbo.end();
 
         BATCH.enableBlending();
 
-        result = new TextureRegion(fbo.getColorBufferTexture());
+        result = new TextureRegion(new Texture(pixmap));
         result.flip(false, true);
+
+        fbo.dispose();
+        pixmap.dispose();
 
         return result;
     }
 
     public static TextureRegion calcFXAA(TextureRegion texture) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, texture.getRegionWidth(), texture.getRegionHeight(), false);
+        Pixmap pixmap;
         TextureRegion result;
 
         BATCH.setShader(AssetsManager.getGraphFXAAShader());
@@ -74,10 +84,15 @@ public class Graphics {
         BATCH.end();
         BATCH.enableBlending();
 
+        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
+
         fbo.end();
 
-        result = new TextureRegion(fbo.getColorBufferTexture());
+        result = new TextureRegion(new Texture(pixmap));
         result.flip(false, true);
+
+        fbo.dispose();
+        pixmap.dispose();
 
         return result;
     }

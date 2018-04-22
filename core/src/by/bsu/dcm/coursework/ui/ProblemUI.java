@@ -3,8 +3,9 @@ package by.bsu.dcm.coursework.ui;
 import by.bsu.dcm.coursework.AssetsManager;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Disposable;
 
-public class ProblemUI extends Table {
+public class ProblemUI extends Table implements Disposable {
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
     private static final int DEFAULT_FONT_SIZE = 15;
@@ -35,5 +36,10 @@ public class ProblemUI extends Table {
         problemSettings.setSkin(AssetsManager.getSkinUI(fontParam));
         problemSettings.resize();
         presentation.resize(Math.round(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))), height);
+    }
+
+    @Override
+    public void dispose() {
+        presentation.dispose();
     }
 }

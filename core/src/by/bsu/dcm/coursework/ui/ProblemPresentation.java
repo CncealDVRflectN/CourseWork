@@ -9,10 +9,11 @@ import by.bsu.dcm.coursework.math.fluid.TargetBondException;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
+import com.badlogic.gdx.utils.Disposable;
 
 import static by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 
-public class ProblemPresentation extends Widget {
+public class ProblemPresentation extends Widget implements Disposable {
     private Graph graph;
     private TextureRegion resultGraph;
     private GraphPoints lastPoints;
@@ -42,16 +43,31 @@ public class ProblemPresentation extends Widget {
         result = EquilibriumFluid.calcRelaxation(fluid, params);
         lastPoints.points = result.points;
 
+        if (resultGraph != null) {
+            resultGraph.getTexture().dispose();
+        }
+
         graph.addGraph(lastPoints);
         resultGraph = graph.getGraph(Math.round(getWidth()), Math.round(getHeight()));
         graph.removeGraph(lastPoints);
     }
 
     public void resize(int width, int height) {
+        if (resultGraph != null) {
+            resultGraph.getTexture().dispose();
+        }
         if (result != null) {
             graph.addGraph(lastPoints);
             resultGraph = graph.getGraph(width, height);
             graph.removeGraph(lastPoints);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        graph.dispose();
+        if (resultGraph != null) {
+            resultGraph.getTexture().dispose();
         }
     }
 }

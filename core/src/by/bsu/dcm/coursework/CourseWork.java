@@ -38,5 +38,7 @@ public class CourseWork extends ApplicationAdapter {
 
     @Override
     public void dispose() {
+        stage.dispose();
+        problemUI.dispose();
     }
 }
