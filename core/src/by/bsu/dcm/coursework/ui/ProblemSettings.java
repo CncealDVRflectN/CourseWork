@@ -34,12 +34,14 @@ public class ProblemSettings extends Table {
     private final Label relaxationCoefLabel;
     private final Label epsilonLabel;
     private final Label splitNumLabel;
+    private final Label maxIterNumLabel;
     private final TextField alphaField;
     private final TextField bondTargetField;
     private final TextField bondStepField;
     private final TextField relaxationCoefField;
     private final TextField epsilonField;
     private final TextField splitNumField;
+    private final TextField maxIterNumField;
     private final TextButton generateButton;
     private final SelectBox<String> problemSelect;
     private final SelectBox<String> antialiasingSelect;
@@ -81,12 +83,14 @@ public class ProblemSettings extends Table {
         relaxationCoefLabel = new Label("Minimal relaxation coeficient:", skin);
         epsilonLabel = new Label("Accuracy:", skin);
         splitNumLabel = new Label("Number of splits:", skin);
+        maxIterNumLabel = new Label("Maximum number of iterations", skin);
         alphaField = new TextField("", skin);
         bondTargetField = new TextField("", skin);
         bondStepField = new TextField("", skin);
         relaxationCoefField = new TextField("", skin);
         epsilonField = new TextField("", skin);
         splitNumField = new TextField("", skin);
+        maxIterNumField = new TextField("", skin);
         generateButton = new TextButton("Generate", skin);
         problemSelect = new SelectBox<>(skin);
         antialiasingSelect = new SelectBox<>(skin);
@@ -107,6 +111,7 @@ public class ProblemSettings extends Table {
         relaxationCoefField.setMessageText("Enter minimal relaxation coeficient");
         epsilonField.setMessageText("Enter accuracy");
         splitNumField.setMessageText("Enter number of splits");
+        maxIterNumField.setMessageText("Enter maximum number of iterations");
 
         alphaField.setTextFieldFilter(new FloatFieldFilter(false));
         bondTargetField.setTextFieldFilter(new FloatFieldFilter(true));
@@ -114,6 +119,7 @@ public class ProblemSettings extends Table {
         relaxationCoefField.setTextFieldFilter(new FloatFieldFilter(true));
         epsilonField.setTextFieldFilter(new FloatFieldFilter(true));
         splitNumField.setTextFieldFilter(new IntegerFieldFilter(true));
+        maxIterNumField.setTextFieldFilter(new IntegerFieldFilter(true));
 
         defaults().pad(5.0f, 5.0f, 0.0f, 5.0f).expandX().fill();
         add(antialiasingLabel).row();
@@ -132,6 +138,8 @@ public class ProblemSettings extends Table {
         add(epsilonField).row();
         add(splitNumLabel).row();
         add(splitNumField).row();
+        add(maxIterNumLabel).row();
+        add(maxIterNumField).row();
         add(generateButton).center().pad(5.0f, 0.0f, 5.0f, 0.0f).width(2.0f * layout.width);
 
         antialiasingSelect.setItems(antialiasings);
@@ -197,6 +205,7 @@ public class ProblemSettings extends Table {
                     relaxationParams.relaxationCoefMin = Double.valueOf(relaxationCoefField.getText());
                     relaxationParams.epsilon = Double.valueOf(epsilonField.getText());
                     relaxationParams.splitNum = Integer.valueOf(splitNumField.getText());
+                    currentProblem.setIterationsLimit(Integer.valueOf(maxIterNumField.getText()));
 
                     presentation.generatePresentation(currentProblem, relaxationParams, currentPoints);
                 } catch (NumberFormatException e) {
@@ -240,14 +249,19 @@ public class ProblemSettings extends Table {
         relaxationCoefLabel.setStyle(labelStyle);
         epsilonLabel.setStyle(labelStyle);
         splitNumLabel.setStyle(labelStyle);
+        maxIterNumLabel.setStyle(labelStyle);
+
         alphaField.setStyle(fieldStyle);
         bondTargetField.setStyle(fieldStyle);
         bondStepField.setStyle(fieldStyle);
         relaxationCoefField.setStyle(fieldStyle);
         epsilonField.setStyle(fieldStyle);
         splitNumField.setStyle(fieldStyle);
+        maxIterNumField.setStyle(fieldStyle);
+
         problemSelect.setStyle(selectStyle);
         antialiasingSelect.setStyle(selectStyle);
+
         generateButton.setStyle(buttonStyle);
     }
 
