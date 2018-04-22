@@ -1,44 +1,45 @@
 package by.bsu.dcm.coursework.ui;
 
 import by.bsu.dcm.coursework.AssetsManager;
-import by.bsu.dcm.coursework.math.Axisymmetric;
-import by.bsu.dcm.coursework.math.Flat;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Disposable;
 
-public class ProblemUI extends Table {
+public class ProblemUI extends Table implements Disposable {
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
     private static final int DEFAULT_FONT_SIZE = 15;
-    private static final float GRAPH_WEIGHT = 7.75f;
+    private static final float PRESENTATION_WEIGHT = 7.75f;
     private static final float SETTINGS_WEIGHT = 2.25f;
 
-    private ProblemGraph problemGraph;
+    private ProblemPresentation presentation;
     private ProblemSettings problemSettings;
     private FreeTypeFontParameter fontParam;
 
-    public ProblemUI(Axisymmetric axisymmetric, Flat flat) {
-        super();
-
+    public ProblemUI() {
         fontParam = new FreeTypeFontParameter();
         fontParam.size = DEFAULT_FONT_SIZE;
 
-        problemGraph = new ProblemGraph(axisymmetric, flat);
-        problemSettings = new ProblemSettings(problemGraph, AssetsManager.getSkinUI(fontParam));
+        presentation = new ProblemPresentation();
+        problemSettings = new ProblemSettings(presentation, AssetsManager.getSkinUI(fontParam));
 
-        add(problemGraph).fill();
+        add(presentation).fill();
         add(problemSettings).fill();
     }
 
     public void resize(int width, int height) {
-        float problemGraphWidth = width * (GRAPH_WEIGHT / (GRAPH_WEIGHT + SETTINGS_WEIGHT));
-
         setSize(width, height);
-        getCell(problemGraph).width(width * (GRAPH_WEIGHT / (GRAPH_WEIGHT + SETTINGS_WEIGHT))).height(height);
-        getCell(problemSettings).width(width * (SETTINGS_WEIGHT / (GRAPH_WEIGHT + SETTINGS_WEIGHT))).height(height);
+        getCell(presentation).width(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
+        getCell(problemSettings).width(width * (SETTINGS_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
 
         fontParam.size = Math.round(DEFAULT_FONT_SIZE * ((float) height / (float) DEFAULT_HEIGHT));
         problemSettings.setSkin(AssetsManager.getSkinUI(fontParam));
-        problemGraph.resize(Math.round(problemGraphWidth), height);
+        problemSettings.resize();
+        presentation.resize(Math.round(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))), height);
+    }
+
+    @Override
+    public void dispose() {
+        presentation.dispose();
     }
 }

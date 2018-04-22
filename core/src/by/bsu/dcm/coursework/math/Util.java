@@ -1,6 +1,9 @@
 package by.bsu.dcm.coursework.math;
 
 public final class Util {
+    private Util() {
+    }
+
     private static double[] calcAlpha(double[][] mtr) {
         double[] alpha = new double[mtr.length - 1];
 
@@ -23,15 +26,13 @@ public final class Util {
         return beta;
     }
 
-    private static double[] calcSolution(double[] alpha, double[] beta) {
-        double[] solution = new double[beta.length];
-
-        solution[solution.length - 1] = beta[beta.length - 1];
-        for (int i = solution.length - 2; i >= 0; i--) {
-            solution[i] = alpha[i] * solution[i + 1] + beta[i];
+    private static double[] calcSolution(double[] alpha, double[] beta, double[] solutionDest) {
+        solutionDest[solutionDest.length - 1] = beta[beta.length - 1];
+        for (int i = solutionDest.length - 2; i >= 0; i--) {
+            solutionDest[i] = alpha[i] * solutionDest[i + 1] + beta[i];
         }
 
-        return solution;
+        return solutionDest;
     }
 
     private static boolean isCorrect(double[][] mtr) {
@@ -55,11 +56,15 @@ public final class Util {
     }
 
     public static double[] calcRightSweep(double[][] mtr, double[] vect) {
+        return calcRightSweep(mtr, vect, new double[vect.length]);
+    }
+
+    public static double[] calcRightSweep(double[][] mtr, double[] vect, double[] solutionDest) {
         double[] alpha;
 
         alpha = calcAlpha(mtr);
 
-        return calcSolution(alpha, calcBeta(mtr, vect, alpha));
+        return calcSolution(alpha, calcBeta(mtr, vect, alpha), solutionDest);
     }
 
     public static double calcIntegralTrapeze(Function func, double step) {

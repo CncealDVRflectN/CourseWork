@@ -7,6 +7,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -16,6 +17,8 @@ import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -23,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class Graph {
+public class Graph implements Disposable {
     private static final short DEFAULT_WIDTH = 1280;
     private static final short DEFAULT_HEIGHT = 720;
     private static final byte DEFAULT_CELL_NUM_X = 16;
@@ -255,6 +258,26 @@ public class Graph {
         });
     }
 
+    private void calcParams(float scaleX, float scaleY) {
+        Vector2 dif = new Vector2();
+        Vector2 ratio = new Vector2();
+        int cellNumXScaled = Math.round(DEFAULT_CELL_NUM_X * scaleX);
+        int cellNumYScaled = Math.round(DEFAULT_CELL_NUM_Y * scaleY);
+        float scaleStepCalc;
+
+        calcMinMax();
+        dif.set(graphsMax.x - graphsMin.x, graphsMax.y - graphsMin.y);
+        ratio.set(dif.x / cellNumXScaled, dif.y / cellNumYScaled);
+        scaleStepCalc = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
+        scaleStep.set(scaleStepCalc, scaleStepCalc);
+        scalesX = calcScales(graphsMin.x, scaleStep.x, cellNumXScaled);
+        scalesY = calcScales(graphsMin.y, scaleStep.y, cellNumYScaled);
+        center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);
+        center(scalesY, graphsMin.y, graphsMax.y, scaleStep.y);
+        centerAxis = calcAxisCenter();
+        normalize();
+    }
+
     private void drawBackground(int width, int height) {
         Gdx.gl30.glLineWidth(markupLineWidth);
 
@@ -383,6 +406,7 @@ public class Graph {
 
     private TextureRegion generateCoordsSystem(int width, int height) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        Pixmap pixmap;
         Matrix4 projMatrix = new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height);
         TextureRegion result;
 
@@ -400,18 +424,24 @@ public class Graph {
         drawAxis(width, height);
         drawScaleMarks(width, height);
 
+        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
+
         fbo.end();
 
         Gdx.gl30.glDisable(GL30.GL_BLEND);
 
-        result = new TextureRegion(fbo.getColorBufferTexture());
+        result = new TextureRegion(new Texture(pixmap));
         result.flip(false, true);
+
+        fbo.dispose();
+        pixmap.dispose();
 
         return result;
     }
 
     private TextureRegion generateGraphsRaw(int width, int height, float scaleMul) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        Pixmap pixmap;
         TextureRegion result;
 
         renderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
@@ -448,44 +478,44 @@ public class Graph {
             renderer.end();
         });
 
+        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
+
         fbo.end();
 
         Gdx.gl30.glDisable(GL30.GL_BLEND);
 
-        result = new TextureRegion(fbo.getColorBufferTexture());
+        result = new TextureRegion(new Texture(pixmap));
         result.flip(false, true);
+
+        fbo.dispose();
+        pixmap.dispose();
 
         return result;
     }
 
-    private void calcParams(float scaleX, float scaleY) {
-        Vector2 dif = new Vector2();
-        Vector2 ratio = new Vector2();
-        int cellNumXScaled = Math.round(DEFAULT_CELL_NUM_X * scaleX);
-        int cellNumYScaled = Math.round(DEFAULT_CELL_NUM_Y * scaleY);
-        float scaleStepCalc;
-
-        calcMinMax();
-        dif.set(graphsMax.x - graphsMin.x, graphsMax.y - graphsMin.y);
-        ratio.set(dif.x / cellNumXScaled, dif.y / cellNumYScaled);
-        scaleStepCalc = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
-        scaleStep.set(scaleStepCalc, scaleStepCalc);
-        scalesX = calcScales(graphsMin.x, scaleStep.x, cellNumXScaled);
-        scalesY = calcScales(graphsMin.y, scaleStep.y, cellNumYScaled);
-        center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);
-        center(scalesY, graphsMin.y, graphsMax.y, scaleStep.y);
-        centerAxis = calcAxisCenter();
-        normalize();
-    }
-
     private TextureRegion generateGraphs(int width, int height) {
+        TextureRegion result;
+        TextureRegion buffer;
+
         switch (graphsAA) {
             case SSAA4:
-                return Graphics.calcDownsample4(generateGraphsRaw(2 * width, 2 * height, 2.0f));
+                buffer = generateGraphsRaw(2 * width, 2 * height, 2.0f);
+                result = Graphics.calcDownsample4(buffer);
+                buffer.getTexture().dispose();
+                return result;
             case FXAA:
-                return Graphics.calcFXAA(generateGraphsRaw(width, height, 1.0f));
+                buffer = generateGraphsRaw(width, height, 1.0f);
+                result = Graphics.calcFXAA(buffer);
+                buffer.getTexture().dispose();
+                return result;
             case SSAA4_FXAA:
-                return Graphics.calcDownsample4(Graphics.calcFXAA(generateGraphsRaw(2 * width, 2 * height, 2.0f)));
+                buffer = generateGraphsRaw(2 * width, 2 * height, 2.0f);
+                result = Graphics.calcFXAA(buffer);
+                buffer.getTexture().dispose();
+                buffer = result;
+                result = Graphics.calcDownsample4(buffer);
+                buffer.getTexture().dispose();
+                return result;
             default:
                 return generateGraphsRaw(width, height, 1.0f);
         }
@@ -493,6 +523,7 @@ public class Graph {
 
     public TextureRegion getGraph(int width, int height) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
+        Pixmap pixmap;
         TextureRegion result;
         TextureRegion coordsSystem;
         TextureRegion graphsTex;
@@ -527,10 +558,17 @@ public class Graph {
         batch.end();
         batch.enableBlending();
 
+        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
+
         fbo.end();
 
-        result = new TextureRegion(fbo.getColorBufferTexture());
+        result = new TextureRegion(new Texture(pixmap));
         result.flip(false, true);
+
+        fbo.dispose();
+        pixmap.dispose();
+        coordsSystem.getTexture().dispose();
+        graphsTex.getTexture().dispose();
 
         return result;
     }
@@ -607,21 +645,31 @@ public class Graph {
     }
 
     public void setFontSize(int size) {
+        font.dispose();
         fontParam.size = size;
         font = AssetsManager.getFont(fontParam);
     }
 
     public void setFontColor(Color color) {
+        font.dispose();
         fontParam.color.set(color);
         font = AssetsManager.getFont(fontParam);
     }
 
     public void setFontColor(float r, float g, float b, float a) {
+        font.dispose();
         fontParam.color.set(r, g, b, a);
         font = AssetsManager.getFont(fontParam);
     }
 
     public void setAntialiasing(AntiAliasing antialiasing) {
         graphsAA = antialiasing;
+    }
+
+    @Override
+    public void dispose() {
+        font.dispose();
+        renderer.dispose();
+        batch.dispose();
     }
 }
