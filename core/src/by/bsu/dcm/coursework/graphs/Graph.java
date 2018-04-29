@@ -345,8 +345,6 @@ public class Graph implements Disposable {
     private String calcScaleMarkFormat(int stepPow) {
         StringBuilder format = new StringBuilder("#0");
 
-        System.out.println("pow: " + stepPow);
-
         if (stepPow < 0) {
             format.append('.');
             for (int i = 0; i > stepPow; i--) {
@@ -372,7 +370,6 @@ public class Graph implements Disposable {
 
         batch.begin();
 
-        System.out.println("StepX: " + scaleStep.x);
         decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
         for (int i = 0; i < scalesXNorm.length; i++) {
             if (scalesX[i] != centerAxis.x) {
@@ -387,7 +384,6 @@ public class Graph implements Disposable {
             }
         }
 
-        System.out.println("StepY: " + scaleStep.y);
         decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
         for (int i = 0; i < scalesYNorm.length; i++) {
             if (scalesY[i] != centerAxis.y) {

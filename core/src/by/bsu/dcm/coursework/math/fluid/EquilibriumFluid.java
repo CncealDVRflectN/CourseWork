@@ -4,10 +4,11 @@ import by.bsu.dcm.coursework.math.Function;
 import by.bsu.dcm.coursework.math.Util;
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.Arrays;
-
 public abstract class EquilibriumFluid {
     protected Function integrand;
+
+    protected ProblemParams lastParams;
+    protected double[] lastCorrectResult;
 
     protected double[] nodes;
     protected double[] nextApprox;
@@ -21,6 +22,8 @@ public abstract class EquilibriumFluid {
     public EquilibriumFluid(Function integrand) {
         this.integrand = integrand;
         iterationsLimit = 10000;
+
+        lastParams = new ProblemParams();
     }
 
     protected abstract void calcNextApproximation(double step, ProblemParams params);
@@ -31,7 +34,7 @@ public abstract class EquilibriumFluid {
         }
     }
 
-    public ProblemResult calcResult(ProblemParams params) throws IterationsLimitException {
+    public ProblemResult calcResult(ProblemParams params) throws IterationsLimitException, IncorrectResultException {
         Vector2[] points = new Vector2[params.splitNum + 1];
         double[] tmp;
         double curEpsilon = params.epsilon / params.relaxationCoef;
@@ -50,10 +53,12 @@ public abstract class EquilibriumFluid {
             rightVect = new double[params.splitNum + 1];
         }
 
-        if (params.pointsInit == null || params.pointsInit.length != params.splitNum + 1) {
+        if (lastParams.splitNum != params.splitNum || lastParams.bond > params.bond || lastParams.alpha != params.alpha ||
+                lastParams.epsilon != params.epsilon) {
             calcInitialApproximation();
+            lastCorrectResult = new double[params.splitNum + 1];
         } else {
-            System.arraycopy(params.pointsInit, 0, nextApprox, 0, params.pointsInit.length);
+            System.arraycopy(lastCorrectResult, 0, nextApprox, 0, lastCorrectResult.length);
         }
 
         do {
@@ -73,11 +78,18 @@ public abstract class EquilibriumFluid {
             throw new IterationsLimitException();
         }
 
+        if (!isCorrect(nextApprox)) {
+            throw new IncorrectResultException();
+        }
+
         for (int i = 0; i < points.length; i++) {
             points[i] = new Vector2((float) nodes[i], (float) nextApprox[i]);
         }
 
-        return new ProblemResult(points, Arrays.copyOf(nextApprox, nextApprox.length), params.alpha, params.bond, params.relaxationCoef, iterations);
+        lastParams.setParams(params);
+        System.arraycopy(nextApprox, 0, lastCorrectResult, 0, nextApprox.length);
+
+        return new ProblemResult(points, params.alpha, params.bond, params.relaxationCoef, iterations);
     }
 
     public void setIterationsLimit(int iterNum) {
@@ -85,26 +97,19 @@ public abstract class EquilibriumFluid {
     }
 
     public static ProblemResult calcRelaxation(EquilibriumFluid equilibriumFluid, RelaxationParams params) throws TargetBondException {
-        ProblemResult tmp;
         ProblemResult result = null;
         ProblemParams problemParams = new ProblemParams(params.alpha, 0.0, 1.0, params.epsilon, params.splitNum);
 
         do {
             try {
-                tmp = equilibriumFluid.calcResult(problemParams);
+                result = equilibriumFluid.calcResult(problemParams);
 
-                if (isCorrect(tmp.points)) {
-                    result = tmp;
-                    problemParams.bond = Math.min(problemParams.bond + params.bondStep, params.bondTarget);
-                    problemParams.pointsInit = tmp.result;
-                } else {
-                    problemParams.relaxationCoef /= 2.0;
-                }
+                problemParams.bond = Math.min(problemParams.bond + params.bondStep, params.bondTarget);
 
-                if (tmp.bond >= params.bondTarget) {
+                if (result.bond >= params.bondTarget) {
                     break;
                 }
-            } catch (IterationsLimitException e) {
+            } catch (IterationsLimitException | IncorrectResultException e) {
                 problemParams.relaxationCoef /= 2.0;
             }
         } while (problemParams.relaxationCoef >= params.relaxationCoefMin);
@@ -116,9 +121,9 @@ public abstract class EquilibriumFluid {
         return result;
     }
 
-    private static boolean isCorrect(Vector2[] points) {
-        for (Vector2 point : points) {
-            if (Float.isNaN(point.y) || Float.isInfinite(point.y)) {
+    private static boolean isCorrect(double[] result) {
+        for (double point : result) {
+            if (Double.isNaN(point) || Double.isInfinite(point)) {
                 return false;
             }
         }

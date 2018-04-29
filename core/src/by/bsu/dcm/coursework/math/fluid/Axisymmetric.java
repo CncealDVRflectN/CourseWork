@@ -31,7 +31,7 @@ public class Axisymmetric extends EquilibriumFluid {
         super(new Integrand());
     }
 
-    private void calcCoefs(double step, ProblemParams params) {
+    private void calcCoefs(double step) {
         double halfStep = step / 2.0;
 
         coefs[0] = 0.0;
@@ -50,7 +50,7 @@ public class Axisymmetric extends EquilibriumFluid {
             coefs = new double[params.splitNum + 1];
         }
 
-        calcCoefs(step, params);
+        calcCoefs(step);
 
         for (int i = 0; i < coefsMtr.length; i++) {
             for (int j = 0; j < coefsMtr[i].length; j++) {
