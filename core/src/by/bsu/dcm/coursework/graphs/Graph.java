@@ -3,6 +3,7 @@ package by.bsu.dcm.coursework.graphs;
 import by.bsu.dcm.coursework.AssetsManager;
 import by.bsu.dcm.coursework.graphics.Graphics;
 import by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
+import by.bsu.dcm.coursework.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
@@ -32,6 +33,7 @@ public class Graph implements Disposable {
     private static final byte DEFAULT_CELL_NUM_X = 16;
     private static final byte DEFAULT_CELL_NUM_Y = 9;
     private static final float[] SCALES = {0.1f, 0.2f, 0.25f, 0.5f, 1.0f};
+    private static final int[] DEFAULT_SCALE_POWS = {-1, -1, -2, -1, 0};
 
     private AntiAliasing graphsAA;
 
@@ -48,6 +50,7 @@ public class Graph implements Disposable {
     private float scaleMarkLineBottomLength;
     private float scaleMarkLineLeftLength;
     private float scaleMarkLineRightLength;
+    private boolean equalAxisScaleMarks;
 
     private Vector2 horizontalScaleMarkOffset;
     private Vector2 verticalScaleMarkOffset;
@@ -59,6 +62,8 @@ public class Graph implements Disposable {
     private float[] scalesY;
     private float[] scalesXNorm;
     private float[] scalesYNorm;
+    private int scalesXPow;
+    private int scalesYPow;
 
     private List<GraphPoints> graphs;
     private List<GraphPoints> graphsNorm;
@@ -85,6 +90,7 @@ public class Graph implements Disposable {
         scaleMarkLineBottomLength = 4.0f;
         scaleMarkLineLeftLength = 4.0f;
         scaleMarkLineRightLength = 4.0f;
+        equalAxisScaleMarks = false;
 
         horizontalScaleMarkOffset = new Vector2(0.0f, 10.0f);
         verticalScaleMarkOffset = new Vector2(10.0f, 0.0f);
@@ -118,9 +124,10 @@ public class Graph implements Disposable {
         });
     }
 
-    private float calcScaleStep(float dif, int cellNum) {
+    private Pair<Float, Integer> calcScaleStep(float dif, int cellNum) {
         float result;
         int pow = 0;
+        int scaleIndex;
         byte sign = 1;
 
         result = dif / cellNum;
@@ -141,18 +148,18 @@ public class Graph implements Disposable {
             }
         }
 
-        for (float scale : SCALES) {
-            if (result <= scale) {
-                result = scale;
+        for (scaleIndex = 0; scaleIndex < SCALES.length; scaleIndex++) {
+            if (result <= SCALES[scaleIndex]) {
+                result = SCALES[scaleIndex];
                 break;
             }
         }
 
-        for (byte i = 0; i < pow; i++) {
+        for (int i = 0; i < pow; i++) {
             result *= (sign > 0.0f) ? 10.0f : 0.1f;
         }
 
-        return result;
+        return new Pair<>(result, sign * pow + DEFAULT_SCALE_POWS[scaleIndex]);
     }
 
     private float[] calcScales(float min, float scaleStep, int cellNum) {
@@ -261,15 +268,26 @@ public class Graph implements Disposable {
     private void calcParams(float scaleX, float scaleY) {
         Vector2 dif = new Vector2();
         Vector2 ratio = new Vector2();
+        Pair<Float, Integer> stepResult;
         int cellNumXScaled = Math.round(DEFAULT_CELL_NUM_X * scaleX);
         int cellNumYScaled = Math.round(DEFAULT_CELL_NUM_Y * scaleY);
-        float scaleStepCalc;
 
         calcMinMax();
         dif.set(graphsMax.x - graphsMin.x, graphsMax.y - graphsMin.y);
         ratio.set(dif.x / cellNumXScaled, dif.y / cellNumYScaled);
-        scaleStepCalc = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
-        scaleStep.set(scaleStepCalc, scaleStepCalc);
+        if (equalAxisScaleMarks) {
+            stepResult = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
+            scaleStep.set(stepResult.first, stepResult.first);
+            scalesXPow = stepResult.second;
+            scalesYPow = stepResult.second;
+        } else {
+            stepResult = calcScaleStep(dif.x, cellNumXScaled);
+            scaleStep.x = stepResult.first;
+            scalesXPow = stepResult.second;
+            stepResult = calcScaleStep(dif.y, cellNumYScaled);
+            scaleStep.y = stepResult.first;
+            scalesYPow = stepResult.second;
+        }
         scalesX = calcScales(graphsMin.x, scaleStep.x, cellNumXScaled);
         scalesY = calcScales(graphsMin.y, scaleStep.y, cellNumYScaled);
         center(scalesX, graphsMin.x, graphsMax.x, scaleStep.x);
@@ -324,15 +342,14 @@ public class Graph implements Disposable {
         Gdx.gl30.glLineWidth(1.0f);
     }
 
-    private String calcScaleMarkFormat(float scaleStep) {
+    private String calcScaleMarkFormat(int stepPow) {
         StringBuilder format = new StringBuilder("#0");
-        float remainder = scaleStep % 1.0f;
 
-        if (remainder != 0.0f) {
+        System.out.println("pow: " + stepPow);
+
+        if (stepPow < 0) {
             format.append('.');
-            while (remainder != 0.0f) {
-                scaleStep *= 10.0f;
-                remainder = scaleStep % 1.0f;
+            for (int i = 0; i > stepPow; i--) {
                 format.append('0');
             }
         }
@@ -355,7 +372,8 @@ public class Graph implements Disposable {
 
         batch.begin();
 
-        decimalFormat.applyPattern(calcScaleMarkFormat(scaleStep.x));
+        System.out.println("StepX: " + scaleStep.x);
+        decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
         for (int i = 0; i < scalesXNorm.length; i++) {
             if (scalesX[i] != centerAxis.x) {
                 scaleMark.setText(font, decimalFormat.format(scalesX[i]));
@@ -369,7 +387,8 @@ public class Graph implements Disposable {
             }
         }
 
-        decimalFormat.applyPattern(calcScaleMarkFormat(scaleStep.y));
+        System.out.println("StepY: " + scaleStep.y);
+        decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
         for (int i = 0; i < scalesYNorm.length; i++) {
             if (scalesY[i] != centerAxis.y) {
                 scaleMark.setText(font, decimalFormat.format(scalesY[i]));
@@ -384,12 +403,12 @@ public class Graph implements Disposable {
             }
         }
 
-        decimalFormat.applyPattern(calcScaleMarkFormat(centerAxis.x));
+        decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
         centerXMark = decimalFormat.format(centerAxis.x);
         if (centerAxis.x == centerAxis.y) {
             scaleMark.setText(font, centerXMark);
         } else {
-            decimalFormat.applyPattern(calcScaleMarkFormat(centerAxis.y));
+            decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
             scaleMark.setText(font, centerXMark + ", " + decimalFormat.format(centerAxis.y));
         }
 
@@ -634,6 +653,14 @@ public class Graph implements Disposable {
 
     public void setHorizontalScaleMarkOffset(float x, float y) {
         horizontalScaleMarkOffset.set(x, y);
+    }
+
+    public void setEqualAxisScaleMarks(boolean equal) {
+        equalAxisScaleMarks = equal;
+    }
+
+    public boolean isEqualAxisScaleMarks() {
+        return equalAxisScaleMarks;
     }
 
     public void setVerticalScaleMarkOffset(Vector2 offset) {

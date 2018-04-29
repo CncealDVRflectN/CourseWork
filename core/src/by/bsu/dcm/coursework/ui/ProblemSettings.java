@@ -13,8 +13,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
+import com.badlogic.gdx.utils.Scaling;
 
 import static by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
+import static com.badlogic.gdx.scenes.scene2d.ui.CheckBox.CheckBoxStyle;
 import static com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import static com.badlogic.gdx.scenes.scene2d.ui.SelectBox.SelectBoxStyle;
 import static com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
@@ -26,6 +28,7 @@ public class ProblemSettings extends Table {
 
     private final ProblemPresentation presentation;
 
+    private final CheckBox equalAxisScalesCheckBox;
     private final Label problemLabel;
     private final Label antialiasingLabel;
     private final Label alphaLabel;
@@ -75,6 +78,7 @@ public class ProblemSettings extends Table {
         plainPoints.lineWidth = 2.0f;
         plainPoints.lineColor.set(0.0f, 0.0f, 1.0f, 0.75f);
 
+        equalAxisScalesCheckBox = new CheckBox("Enable equal axis scales", skin);
         problemLabel = new Label("Select problem type:", skin);
         antialiasingLabel = new Label("Select antialiasing:", skin);
         alphaLabel = new Label("Contact angle:", skin);
@@ -105,6 +109,8 @@ public class ProblemSettings extends Table {
 
         layout.setText(generateButton.getStyle().font, generateButton.getText());
 
+        equalAxisScalesCheckBox.getImage().setScaling(Scaling.fit);
+
         alphaField.setMessageText("Enter contact angle");
         bondTargetField.setMessageText("Enter target Bond number");
         bondStepField.setMessageText("Enter relaxation Bond number step");
@@ -121,7 +127,12 @@ public class ProblemSettings extends Table {
         splitNumField.setTextFieldFilter(new IntegerFieldFilter(true));
         maxIterNumField.setTextFieldFilter(new IntegerFieldFilter(true));
 
+        equalAxisScalesCheckBox.getImageCell().spaceRight(5.0f);
+        equalAxisScalesCheckBox.left();
+
         defaults().pad(5.0f, 5.0f, 0.0f, 5.0f).expandX().fill();
+        add(equalAxisScalesCheckBox).size(AssetsManager.getCurrentUIFontParam().size, AssetsManager.getCurrentUIFontParam().size)
+                .left().row();
         add(antialiasingLabel).row();
         add(antialiasingSelect).row();
         add(problemLabel).row();
@@ -149,6 +160,15 @@ public class ProblemSettings extends Table {
         problemSelect.setSelected("Axisymmetric");
         currentProblem = axisymmetric;
         currentPoints = axisymmetricPoints;
+
+        equalAxisScalesCheckBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!event.isHandled()) {
+                    presentation.setEqualAxisScaleMarks(!presentation.isEqualAxisScaleMarks());
+                }
+            }
+        });
 
         antialiasingSelect.addListener(new ChangeListener() {
             @Override
@@ -229,6 +249,7 @@ public class ProblemSettings extends Table {
 
     @Override
     public void setSkin(Skin skin) {
+        CheckBoxStyle checkBoxStyle;
         LabelStyle labelStyle;
         TextFieldStyle fieldStyle;
         SelectBoxStyle selectStyle;
@@ -236,11 +257,13 @@ public class ProblemSettings extends Table {
 
         super.setSkin(skin);
 
+        checkBoxStyle = skin.get(CheckBoxStyle.class);
         labelStyle = skin.get(LabelStyle.class);
         fieldStyle = skin.get(TextFieldStyle.class);
         selectStyle = skin.get(SelectBoxStyle.class);
         buttonStyle = skin.get(TextButtonStyle.class);
 
+        equalAxisScalesCheckBox.setStyle(checkBoxStyle);
         problemLabel.setStyle(labelStyle);
         antialiasingLabel.setStyle(labelStyle);
         alphaLabel.setStyle(labelStyle);
@@ -271,5 +294,7 @@ public class ProblemSettings extends Table {
         layout.setText(generateButton.getStyle().font, generateButton.getText());
 
         getCell(generateButton).width(2.0f * layout.width);
+        getCell(equalAxisScalesCheckBox).width(AssetsManager.getCurrentUIFontParam().size).height(AssetsManager.getCurrentUIFontParam().size);
+        equalAxisScalesCheckBox.getImageCell().size(AssetsManager.getCurrentUIFontParam().size, AssetsManager.getCurrentUIFontParam().size);
     }
 }

@@ -34,10 +34,6 @@ public class ProblemPresentation extends Widget implements Disposable {
         }
     }
 
-    public void setAntialiasing(AntiAliasing antialiasing) {
-        graph.setAntialiasing(antialiasing);
-    }
-
     public void generatePresentation(EquilibriumFluid fluid, RelaxationParams params, GraphPoints graphPoints) throws TargetBondException {
         lastPoints = graphPoints;
         result = EquilibriumFluid.calcRelaxation(fluid, params);
@@ -50,6 +46,18 @@ public class ProblemPresentation extends Widget implements Disposable {
         graph.addGraph(lastPoints);
         resultGraph = graph.getGraph(Math.round(getWidth()), Math.round(getHeight()));
         graph.removeGraph(lastPoints);
+    }
+
+    public void setAntialiasing(AntiAliasing antialiasing) {
+        graph.setAntialiasing(antialiasing);
+    }
+
+    public void setEqualAxisScaleMarks(boolean equal) {
+        graph.setEqualAxisScaleMarks(equal);
+    }
+
+    public boolean isEqualAxisScaleMarks() {
+        return graph.isEqualAxisScaleMarks();
     }
 
     public void resize(int width, int height) {

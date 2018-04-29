@@ -1,12 +1,28 @@
 
 uiskin.png
-size: 64,16
+size: 128,16
 format: RGBA8888
 filter: Nearest,Nearest
 repeat: none
+checkbox-checked
+  rotate: false
+  xy: 21, 3
+  size: 11, 11
+  split: 0, 0, 0, 0
+  orig: 11, 11
+  offset: 0, 0
+  index: -1
+checkbox-unchecked
+  rotate: false
+  xy: 34, 3
+  size: 11, 11
+  split: 0, 0, 0, 0
+  orig: 11, 11
+  offset: 0, 0
+  index: -1
 error-background
   rotate: false
-  xy: 35, 6
+  xy: 61, 6
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -14,7 +30,7 @@ error-background
   index: -1
 knob
   rotate: false
-  xy: 28, 9
+  xy: 54, 2
   size: 5, 5
   split: 1, 1, 1, 1
   orig: 5, 5
@@ -22,7 +38,7 @@ knob
   index: -1
 scroll
   rotate: false
-  xy: 28, 2
+  xy: 54, 9
   size: 5, 5
   split: 1, 1, 1, 1
   orig: 5, 5
@@ -30,7 +46,7 @@ scroll
   index: -1
 background-default
   rotate: false
-  xy: 28, 2
+  xy: 54, 9
   size: 5, 5
   split: 0, 0, 0, 0
   pad: 2, 2, 0, 0
@@ -48,7 +64,7 @@ select-box
   index: -1
 settings-background
   rotate: false
-  xy: 35, 11
+  xy: 61, 11
   size: 3, 3
   split: 1, 1, 1, 1
   orig: 3, 3
@@ -64,7 +80,7 @@ slider-background
   index: -1
 slider-knob
   rotate: false
-  xy: 21, 3
+  xy: 47, 3
   size: 5, 11
   split: 1, 1, 2, 2
   pad: 2, 2, 5, 5
@@ -73,7 +89,7 @@ slider-knob
   index: -1
 white
   rotate: false
-  xy: 40, 11
+  xy: 66, 11
   size: 3, 3
   orig: 3, 3
   offset: 0, 0

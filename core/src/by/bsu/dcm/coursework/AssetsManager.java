@@ -129,6 +129,10 @@ public final class AssetsManager {
         return skinUI;
     }
 
+    public static FreeTypeFontParameter getCurrentUIFontParam() {
+        return currentUIFontParam;
+    }
+
     public static ErrorDialog getErrorDialog() {
         if (errorDialog == null) {
             errorDialog = new ErrorDialog(getSkinUI(currentUIFontParam));

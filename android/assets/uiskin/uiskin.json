@@ -188,5 +188,13 @@
       background: slider-background,
       knob: slider-knob
     }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+    default: {
+      font: font,
+      fontColor: white,
+      checkboxOn: checkbox-checked,
+      checkboxOff: checkbox-unchecked
+    }
   }
 }
