@@ -2,6 +2,7 @@ package by.bsu.dcm.coursework.ui;
 
 import by.bsu.dcm.coursework.graphs.Graph;
 import by.bsu.dcm.coursework.graphs.GraphPoints;
+import by.bsu.dcm.coursework.math.RightSweepExceprion;
 import by.bsu.dcm.coursework.math.fluid.EquilibriumFluid;
 import by.bsu.dcm.coursework.math.fluid.ProblemResult;
 import by.bsu.dcm.coursework.math.fluid.RelaxationParams;
@@ -34,7 +35,7 @@ public class ProblemPresentation extends Widget implements Disposable {
         }
     }
 
-    public void generatePresentation(EquilibriumFluid fluid, RelaxationParams params, GraphPoints graphPoints) throws TargetBondException {
+    public void generatePresentation(EquilibriumFluid fluid, RelaxationParams params, GraphPoints graphPoints) throws TargetBondException, RightSweepExceprion {
         lastPoints = graphPoints;
         result = EquilibriumFluid.calcRelaxation(fluid, params);
         lastPoints.points = result.points;
