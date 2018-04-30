@@ -3,17 +3,15 @@ package by.bsu.dcm.coursework.graphs;
 import by.bsu.dcm.coursework.AssetsManager;
 import by.bsu.dcm.coursework.graphics.Graphics;
 import by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
+import by.bsu.dcm.coursework.math.Util;
 import by.bsu.dcm.coursework.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
@@ -21,11 +19,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class Graph implements Disposable {
     private static final short DEFAULT_WIDTH = 1280;
@@ -37,23 +32,8 @@ public class Graph implements Disposable {
 
     private AntiAliasing graphsAA;
 
-    private FreeTypeFontParameter fontParam;
-    private BitmapFont font;
-    private DecimalFormat decimalFormat;
-    private Color backgroundColor;
-    private Color markupColor;
-    private Color axisColor;
-    private float markupLineWidth;
-    private float axisLineWidth;
-
-    private float scaleMarkLineTopLength;
-    private float scaleMarkLineBottomLength;
-    private float scaleMarkLineLeftLength;
-    private float scaleMarkLineRightLength;
-    private boolean equalAxisScaleMarks;
-
-    private Vector2 horizontalScaleMarkOffset;
-    private Vector2 verticalScaleMarkOffset;
+    private GraphBackground background;
+    private GraphAxis axis;
 
     private Vector2 centerAxis;
     private Vector2 centerAxisNorm;
@@ -74,26 +54,8 @@ public class Graph implements Disposable {
     private ShapeRenderer renderer;
 
     public Graph() {
-        fontParam = new FreeTypeFontParameter();
-        decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
-        backgroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-        markupColor = new Color(0.75f, 0.75f, 0.75f, 1.0f);
-        axisColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-        markupLineWidth = 1.0f;
-        axisLineWidth = 1.0f;
-        fontParam.size = 12;
-        fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-
-        font = AssetsManager.getFont(fontParam);
-
-        scaleMarkLineTopLength = 4.0f;
-        scaleMarkLineBottomLength = 4.0f;
-        scaleMarkLineLeftLength = 4.0f;
-        scaleMarkLineRightLength = 4.0f;
-        equalAxisScaleMarks = false;
-
-        horizontalScaleMarkOffset = new Vector2(0.0f, 10.0f);
-        verticalScaleMarkOffset = new Vector2(10.0f, 0.0f);
+        background = new GraphBackground(new Color(1.0f, 1.0f, 1.0f, 1.0f), new Color(0.75f, 0.75f, 0.75f, 1.0f), 1.0f);
+        axis = new GraphAxis();
 
         graphsAA = AntiAliasing.noAA;
 
@@ -219,39 +181,15 @@ public class Graph implements Disposable {
         return result;
     }
 
-    private float[] normalize(float[] arr, float min, float max) {
-        float[] result = new float[arr.length];
-
-        for (int i = 0; i < arr.length; i++) {
-            result[i] = (arr[i] - min) / (max - min);
-        }
-
-        return result;
-    }
-
-    private Vector2[] normalize(Vector2[] arr, Vector2 min, Vector2 max) {
-        Vector2[] result = new Vector2[arr.length];
-
-        for (int i = 0; i < arr.length; i++) {
-            result[i] = new Vector2((arr[i].x - min.x) / (max.x - min.x), (arr[i].y - min.y) / (max.y - min.y));
-        }
-
-        return result;
-    }
-
-    private Vector2 normalize(Vector2 vect, Vector2 min, Vector2 max) {
-        return new Vector2((vect.x - min.x) / (max.x - min.x), (vect.y - min.y) / (max.y - min.y));
-    }
-
     private void normalize() {
         Vector2 min = new Vector2((scalesX[0] + scalesX[1]) / 2.0f, (scalesY[0] + scalesY[1]) / 2.0f);
         Vector2 max = new Vector2((scalesX[scalesX.length - 2] + scalesX[scalesX.length - 1]) / 2.0f,
                 (scalesY[scalesY.length - 2] + scalesY[scalesY.length - 1]) / 2.0f);
         graphsNorm.clear();
 
-        scalesXNorm = normalize(scalesX, min.x, max.x);
-        scalesYNorm = normalize(scalesY, min.y, max.y);
-        centerAxisNorm = normalize(centerAxis, min, max);
+        scalesXNorm = Util.normalize(scalesX, min.x, max.x);
+        scalesYNorm = Util.normalize(scalesY, min.y, max.y);
+        centerAxisNorm = Util.normalize(centerAxis, min, max);
         graphs.forEach(graph -> {
             GraphPoints graphNorm = new GraphPoints();
 
@@ -259,7 +197,7 @@ public class Graph implements Disposable {
             graphNorm.lineColor.set(graph.lineColor);
             graphNorm.pointColor.set(graph.pointColor);
             graphNorm.pointSize = graph.pointSize;
-            graphNorm.points = normalize(graph.points, min, max);
+            graphNorm.points = Util.normalize(graph.points, min, max);
 
             graphsNorm.add(graphNorm);
         });
@@ -275,7 +213,7 @@ public class Graph implements Disposable {
         calcMinMax();
         dif.set(graphsMax.x - graphsMin.x, graphsMax.y - graphsMin.y);
         ratio.set(dif.x / cellNumXScaled, dif.y / cellNumYScaled);
-        if (equalAxisScaleMarks) {
+        if (axis.isEqualAxisScaleMarks()) {
             stepResult = (ratio.x > ratio.y) ? calcScaleStep(dif.x, cellNumXScaled) : calcScaleStep(dif.y, cellNumYScaled);
             scaleStep.set(stepResult.first, stepResult.first);
             scalesXPow = stepResult.second;
@@ -296,129 +234,6 @@ public class Graph implements Disposable {
         normalize();
     }
 
-    private void drawBackground(int width, int height) {
-        Gdx.gl30.glLineWidth(markupLineWidth);
-
-        renderer.begin(ShapeRenderer.ShapeType.Line);
-        renderer.setColor(markupColor);
-
-        for (int i = 0; i < scalesXNorm.length; i++) {
-            renderer.line(scalesXNorm[i] * width, 0.0f, scalesXNorm[i] * width, height);
-        }
-
-        for (int i = 0; i < scalesYNorm.length; i++) {
-            renderer.line(0.0f, scalesYNorm[i] * height, width, scalesYNorm[i] * height);
-        }
-
-        renderer.end();
-
-        Gdx.gl30.glLineWidth(1.0f);
-    }
-
-    private void drawAxis(int width, int height) {
-        float scaleLineOffset = axisLineWidth / 2.0f;
-
-        Gdx.gl30.glLineWidth(axisLineWidth);
-
-        renderer.begin(ShapeRenderer.ShapeType.Line);
-        renderer.setColor(axisColor);
-
-        renderer.line(0.0f, centerAxisNorm.y * height, width, centerAxisNorm.y * height);
-        renderer.line(centerAxisNorm.x * width, 0.0f, centerAxisNorm.x * width, height);
-
-        for (int i = 0; i < scalesXNorm.length; i++) {
-            renderer.setColor(axisColor);
-            renderer.line(scalesXNorm[i] * width, centerAxisNorm.y * height - (scaleLineOffset + scaleMarkLineBottomLength),
-                    scalesXNorm[i] * width, centerAxisNorm.y * height + (scaleLineOffset + scaleMarkLineTopLength));
-        }
-
-        for (int i = 0; i < scalesYNorm.length; i++) {
-            renderer.line(centerAxisNorm.x * width - (scaleLineOffset + scaleMarkLineLeftLength), scalesYNorm[i] * height,
-                    centerAxisNorm.x * width + (scaleLineOffset + scaleMarkLineRightLength), scalesYNorm[i] * height);
-        }
-
-        renderer.end();
-
-        Gdx.gl30.glLineWidth(1.0f);
-    }
-
-    private String calcScaleMarkFormat(int stepPow) {
-        StringBuilder format = new StringBuilder("#0");
-
-        if (stepPow < 0) {
-            format.append('.');
-            for (int i = 0; i > stepPow; i--) {
-                format.append('0');
-            }
-        }
-
-        return format.toString();
-    }
-
-    private void drawScaleMarks(int width, int height) {
-        GlyphLayout scaleMark = new GlyphLayout();
-        Vector2 curOffset = new Vector2();
-        String centerXMark;
-        float horScaleMarksOffsetSign;
-        float vertScaleMarksOffsetSign;
-        float additionalOffset = axisLineWidth / 2.0f;
-
-        horScaleMarksOffsetSign = (centerAxisNorm.y <= 0.5f) ? -1.0f : 1.0f;
-        vertScaleMarksOffsetSign = (centerAxisNorm.x >= 0.5f) ? 1.0f : -1.0f;
-
-        batch.setShader(SpriteBatch.createDefaultShader());
-
-        batch.begin();
-
-        decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
-        for (int i = 0; i < scalesXNorm.length; i++) {
-            if (scalesX[i] != centerAxis.x) {
-                scaleMark.setText(font, decimalFormat.format(scalesX[i]));
-
-                curOffset.y = additionalOffset;
-                curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
-                curOffset.x = -scaleMark.width / 2.0f;
-
-                font.draw(batch, scaleMark, scalesXNorm[i] * width + horizontalScaleMarkOffset.x + curOffset.x,
-                        centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
-            }
-        }
-
-        decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
-        for (int i = 0; i < scalesYNorm.length; i++) {
-            if (scalesY[i] != centerAxis.y) {
-                scaleMark.setText(font, decimalFormat.format(scalesY[i]));
-
-                curOffset.x = additionalOffset;
-                curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
-                curOffset.y = scaleMark.height / 2.0f;
-
-                font.draw(batch, scaleMark, centerAxisNorm.x * width +
-                                vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
-                        scalesYNorm[i] * height + verticalScaleMarkOffset.y + curOffset.y);
-            }
-        }
-
-        decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
-        centerXMark = decimalFormat.format(centerAxis.x);
-        if (centerAxis.x == centerAxis.y) {
-            scaleMark.setText(font, centerXMark);
-        } else {
-            decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
-            scaleMark.setText(font, centerXMark + ", " + decimalFormat.format(centerAxis.y));
-        }
-
-        curOffset.set(additionalOffset, additionalOffset);
-        curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
-        curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
-
-        font.draw(batch, scaleMark, centerAxisNorm.x * width +
-                        vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
-                centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
-
-        batch.end();
-    }
-
     private TextureRegion generateCoordsSystem(int width, int height) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         Pixmap pixmap;
@@ -430,14 +245,12 @@ public class Graph implements Disposable {
 
         fbo.begin();
 
-        Gdx.gl30.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
         Gdx.gl30.glEnable(GL30.GL_BLEND);
         Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 
-        drawBackground(width, height);
-        drawAxis(width, height);
-        drawScaleMarks(width, height);
+        background.draw(renderer, scalesXNorm, scalesYNorm, width, height);
+        axis.draw(batch, renderer, centerAxis, centerAxisNorm, scalesX, scalesY, scalesXNorm, scalesYNorm,
+                scalesXPow, scalesYPow, width, height);
 
         pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
 
@@ -605,84 +418,75 @@ public class Graph implements Disposable {
     }
 
     public void setBackgroundColor(Color color) {
-        backgroundColor.set(color);
+        background.setBackgroundColor(color);
     }
 
     public void setBackgroundColor(float r, float g, float b, float a) {
-        backgroundColor.set(r, g, b, a);
+        background.setBackgroundColor(r, g, b, a);
     }
 
     public void setMarkupColor(Color color) {
-        markupColor.set(color);
+        background.setMarkupColor(color);
     }
 
     public void setMarkupColor(float r, float g, float b, float a) {
-        markupColor.set(r, g, b, a);
-    }
-
-    public void setAxisColor(Color color) {
-        axisColor.set(color);
-    }
-
-    public void setAxisColor(float r, float g, float b, float a) {
-        axisColor.set(r, g, b, a);
+        background.setMarkupColor(r, g, b, a);
     }
 
     public void setMarkupLineWidth(float lineWidth) {
-        markupLineWidth = lineWidth;
+        background.setMarkupLineWidth(lineWidth);
+    }
+
+    public void setAxisColor(Color color) {
+        axis.setAxisColor(color);
+    }
+
+    public void setAxisColor(float r, float g, float b, float a) {
+        axis.setAxisColor(r, g, b, a);
     }
 
     public void setAxisLineWidth(float lineWidth) {
-        axisLineWidth = lineWidth;
+        axis.setAxisLineWidth(lineWidth);
     }
 
     public void setAxisScaleMarkLinesLength(float top, float bottom, float left, float right) {
-        scaleMarkLineTopLength = top;
-        scaleMarkLineBottomLength = bottom;
-        scaleMarkLineLeftLength = left;
-        scaleMarkLineRightLength = right;
+        axis.setAxisScaleMarkLinesLength(top, bottom, left, right);
     }
 
     public void setHorizontalScaleMarkOffset(Vector2 offset) {
-        horizontalScaleMarkOffset.set(offset);
+        axis.setHorizontalScaleMarkOffset(offset);
     }
 
     public void setHorizontalScaleMarkOffset(float x, float y) {
-        horizontalScaleMarkOffset.set(x, y);
-    }
-
-    public void setEqualAxisScaleMarks(boolean equal) {
-        equalAxisScaleMarks = equal;
-    }
-
-    public boolean isEqualAxisScaleMarks() {
-        return equalAxisScaleMarks;
+        axis.setHorizontalScaleMarkOffset(x, y);
     }
 
     public void setVerticalScaleMarkOffset(Vector2 offset) {
-        verticalScaleMarkOffset.set(offset);
+        axis.setVerticalScaleMarkOffset(offset);
     }
 
     public void setVerticalScaleMarkOffset(float x, float y) {
-        verticalScaleMarkOffset.set(x, y);
+        axis.setVerticalScaleMarkOffset(x, y);
     }
 
     public void setFontSize(int size) {
-        font.dispose();
-        fontParam.size = size;
-        font = AssetsManager.getFont(fontParam);
+        axis.setFontSize(size);
     }
 
     public void setFontColor(Color color) {
-        font.dispose();
-        fontParam.color.set(color);
-        font = AssetsManager.getFont(fontParam);
+        axis.setFontColor(color);
     }
 
     public void setFontColor(float r, float g, float b, float a) {
-        font.dispose();
-        fontParam.color.set(r, g, b, a);
-        font = AssetsManager.getFont(fontParam);
+        axis.setFontColor(r, g, b, a);
+    }
+
+    public void setEqualAxisScaleMarks(boolean equal) {
+        axis.setEqualAxisScaleMarks(equal);
+    }
+
+    public boolean isEqualAxisScaleMarks() {
+        return axis.isEqualAxisScaleMarks();
     }
 
     public void setAntialiasing(AntiAliasing antialiasing) {
@@ -691,7 +495,7 @@ public class Graph implements Disposable {
 
     @Override
     public void dispose() {
-        font.dispose();
+        axis.dispose();
         renderer.dispose();
         batch.dispose();
     }
