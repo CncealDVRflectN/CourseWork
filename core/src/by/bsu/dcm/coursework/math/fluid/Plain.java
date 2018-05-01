@@ -1,7 +1,6 @@
 package by.bsu.dcm.coursework.math.fluid;
 
 import by.bsu.dcm.coursework.math.Function;
-import by.bsu.dcm.coursework.math.RightSweepExceprion;
 import by.bsu.dcm.coursework.math.Util;
 
 public class Plain extends EquilibriumFluid {
@@ -29,7 +28,7 @@ public class Plain extends EquilibriumFluid {
     }
 
     @Override
-    protected void calcNextApproximation(double step, ProblemParams params) throws RightSweepExceprion {
+    protected void calcNextApproximation(double step, ProblemParams params) {
         double coef = 8.0 * step;
         double integral;
 

@@ -13,7 +13,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 
 public class Graphics {
     public enum AntiAliasing {
-        noAA(), SSAA4(), FXAA(), SSAA4_FXAA()
+        noAA, SSAA4, FXAA, SSAA4_FXAA
     }
 
     private static final float FXAA_SPAN_MAX = 8.0f;

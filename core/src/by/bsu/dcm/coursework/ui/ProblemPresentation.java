@@ -2,7 +2,6 @@ package by.bsu.dcm.coursework.ui;
 
 import by.bsu.dcm.coursework.graphs.Graph;
 import by.bsu.dcm.coursework.graphs.GraphPoints;
-import by.bsu.dcm.coursework.math.RightSweepExceprion;
 import by.bsu.dcm.coursework.math.fluid.EquilibriumFluid;
 import by.bsu.dcm.coursework.math.fluid.ProblemResult;
 import by.bsu.dcm.coursework.math.fluid.RelaxationParams;
@@ -11,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.utils.Disposable;
+
+import java.util.Locale;
 
 import static by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 
@@ -35,10 +36,11 @@ public class ProblemPresentation extends Widget implements Disposable {
         }
     }
 
-    public void generatePresentation(EquilibriumFluid fluid, RelaxationParams params, GraphPoints graphPoints) throws TargetBondException, RightSweepExceprion {
+    public void generatePresentation(EquilibriumFluid fluid, RelaxationParams params, GraphPoints graphPoints) throws TargetBondException {
         lastPoints = graphPoints;
         result = EquilibriumFluid.calcRelaxation(fluid, params);
         lastPoints.points = result.points;
+        lastPoints.desription = String.format(Locale.ENGLISH, "Bond number = %f", result.bond);
 
         if (resultGraph != null) {
             resultGraph.getTexture().dispose();

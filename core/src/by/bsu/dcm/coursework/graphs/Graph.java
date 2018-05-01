@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Graph implements Disposable {
+    public enum DescriptionAlign {
+        TopLeft, TopRight, BottomRight, BottomLeft
+    }
+
     private static final short DEFAULT_WIDTH = 1280;
     private static final short DEFAULT_HEIGHT = 720;
     private static final byte DEFAULT_CELL_NUM_X = 16;
@@ -34,6 +38,8 @@ public class Graph implements Disposable {
 
     private GraphBackground background;
     private GraphAxis axis;
+    private GraphDescription description;
+    private DescriptionAlign descriptionAlign;
 
     private Vector2 centerAxis;
     private Vector2 centerAxisNorm;
@@ -56,6 +62,8 @@ public class Graph implements Disposable {
     public Graph() {
         background = new GraphBackground(new Color(1.0f, 1.0f, 1.0f, 1.0f), new Color(0.75f, 0.75f, 0.75f, 1.0f), 1.0f);
         axis = new GraphAxis();
+        description = new GraphDescription();
+        descriptionAlign = DescriptionAlign.BottomLeft;
 
         graphsAA = AntiAliasing.noAA;
 
@@ -234,6 +242,15 @@ public class Graph implements Disposable {
         normalize();
     }
 
+    private boolean isDescriptionEmpty() {
+        for (GraphPoints graph : graphs) {
+            if (graph.desription != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private TextureRegion generateCoordsSystem(int width, int height) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         Pixmap pixmap;
@@ -384,6 +401,16 @@ public class Graph implements Disposable {
         batch.draw(graphsTex, 0.0f, 0.0f);
 
         batch.end();
+
+        if (!isDescriptionEmpty()) {
+            Gdx.gl30.glEnable(GL30.GL_BLEND);
+            Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+
+            description.draw(batch, renderer, descriptionAlign, graphs, width, height);
+
+            Gdx.gl30.glDisable(GL30.GL_BLEND);
+        }
+
         batch.enableBlending();
 
         pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
@@ -469,16 +496,60 @@ public class Graph implements Disposable {
         axis.setVerticalScaleMarkOffset(x, y);
     }
 
-    public void setFontSize(int size) {
+    public void setAxisFontSize(int size) {
         axis.setFontSize(size);
     }
 
-    public void setFontColor(Color color) {
+    public void setAxisFontColor(Color color) {
         axis.setFontColor(color);
     }
 
-    public void setFontColor(float r, float g, float b, float a) {
+    public void setAxisFontColor(float r, float g, float b, float a) {
         axis.setFontColor(r, g, b, a);
+    }
+
+    public void setDescriptionAlign(DescriptionAlign align) {
+        descriptionAlign = align;
+    }
+
+    public void setDescriptionBackgroundColor(Color color) {
+        description.setBackgroundColor(color);
+    }
+
+    public void setDescriptionBackgroundColor(float r, float g, float b, float a) {
+        description.setBackgroundColor(r, g, b, a);
+    }
+
+    public void setDescriptionBorderLineColor(Color color) {
+        description.setBorderLineColor(color);
+    }
+
+    public void setDescriptionBorderLineColor(float r, float g, float b, float a) {
+        description.setBorderLineColor(r, g, b, a);
+    }
+
+    public void setDescriptionBorderLineWidth(float lineWidth) {
+        description.setBorderLineWidth(lineWidth);
+    }
+
+    public void setDescriptionFontSize(int size) {
+        description.setFontSize(size);
+    }
+
+    public void setDescriptionFontColor(Color color) {
+        description.setFontColor(color);
+    }
+
+    public void setDescriptionFontColor(float r, float g, float b, float a) {
+        description.setFontColor(r, g, b, a);
+    }
+
+    public void setDescriptionPadding(float top, float right, float bottom, float left) {
+        description.setPadding(top, right, bottom, left);
+    }
+
+    public void setDescriptionSpacing(float horizontal, float vertical) {
+        description.setSpacing(horizontal, vertical);
     }
 
     public void setEqualAxisScaleMarks(boolean equal) {

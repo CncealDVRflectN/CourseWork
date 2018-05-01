@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 
 public class GraphPoints {
     public Vector2[] points;
+    public String desription;
     public Color lineColor;
     public Color pointColor;
     public float lineWidth;

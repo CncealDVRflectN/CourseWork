@@ -1,7 +1,6 @@
 package by.bsu.dcm.coursework.math.fluid;
 
 import by.bsu.dcm.coursework.math.Function;
-import by.bsu.dcm.coursework.math.RightSweepExceprion;
 import by.bsu.dcm.coursework.math.Util;
 
 public class Axisymmetric extends EquilibriumFluid {
@@ -43,7 +42,7 @@ public class Axisymmetric extends EquilibriumFluid {
     }
 
     @Override
-    protected void calcNextApproximation(double step, ProblemParams params) throws RightSweepExceprion {
+    protected void calcNextApproximation(double step, ProblemParams params) {
         double integral;
         double q;
 

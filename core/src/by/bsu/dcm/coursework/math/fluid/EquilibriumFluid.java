@@ -1,7 +1,6 @@
 package by.bsu.dcm.coursework.math.fluid;
 
 import by.bsu.dcm.coursework.math.Function;
-import by.bsu.dcm.coursework.math.RightSweepExceprion;
 import by.bsu.dcm.coursework.math.Util;
 import com.badlogic.gdx.math.Vector2;
 
@@ -27,7 +26,7 @@ public abstract class EquilibriumFluid {
         lastParams = new ProblemParams();
     }
 
-    protected abstract void calcNextApproximation(double step, ProblemParams params) throws RightSweepExceprion;
+    protected abstract void calcNextApproximation(double step, ProblemParams params);
 
     protected void calcInitialApproximation() {
         for (int i = 0; i < nodes.length; i++) {
@@ -35,7 +34,7 @@ public abstract class EquilibriumFluid {
         }
     }
 
-    public ProblemResult calcResult(ProblemParams params) throws IterationsLimitException, IncorrectResultException, RightSweepExceprion {
+    public ProblemResult calcResult(ProblemParams params) throws IterationsLimitException, IncorrectResultException {
         Vector2[] points = new Vector2[params.splitNum + 1];
         double[] tmp;
         double curEpsilon = params.epsilon / params.relaxationCoef;
@@ -97,7 +96,7 @@ public abstract class EquilibriumFluid {
         iterationsLimit = iterNum;
     }
 
-    public static ProblemResult calcRelaxation(EquilibriumFluid equilibriumFluid, RelaxationParams params) throws TargetBondException, RightSweepExceprion {
+    public static ProblemResult calcRelaxation(EquilibriumFluid equilibriumFluid, RelaxationParams params) throws TargetBondException {
         ProblemResult result = null;
         ProblemParams problemParams = new ProblemParams(params.alpha, 0.0, 1.0, params.epsilon, params.splitNum);
 

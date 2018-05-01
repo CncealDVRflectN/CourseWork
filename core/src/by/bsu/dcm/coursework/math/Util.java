@@ -55,11 +55,11 @@ public final class Util {
         return new Vector2((vect.x - min.x) / (max.x - min.x), (vect.y - min.y) / (max.y - min.y));
     }
 
-    public static double[] calcRightSweep(double[][] mtr, double[] vect) throws RightSweepExceprion {
+    public static double[] calcRightSweep(double[][] mtr, double[] vect) {
         return RightSweep.calcRightSweep(mtr, vect, new double[vect.length]);
     }
 
-    public static double[] calcRightSweep(double[][] mtr, double[] vect, double[] solutionDest) throws RightSweepExceprion {
+    public static double[] calcRightSweep(double[][] mtr, double[] vect, double[] solutionDest) {
         return RightSweep.calcRightSweep(mtr, vect, solutionDest);
     }
 
@@ -110,9 +110,9 @@ public final class Util {
             return true;
         }
 
-        public static double[] calcRightSweep(double[][] mtr, double[] vect, double[] solutionDest) throws RightSweepExceprion {
+        public static double[] calcRightSweep(double[][] mtr, double[] vect, double[] solutionDest) {
             if (!isCorrect(mtr)) {
-                throw new RightSweepExceprion();
+                System.out.println("Warning: right sweep matrix incorrect!");
             }
 
             if (beta == null || beta.length != mtr.length) {
