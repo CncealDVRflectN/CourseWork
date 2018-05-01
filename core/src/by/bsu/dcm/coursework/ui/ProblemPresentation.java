@@ -24,6 +24,7 @@ public class ProblemPresentation extends Widget implements Disposable {
 
     public ProblemPresentation() {
         graph = new Graph();
+        graph.setName("Solution");
     }
 
     @Override

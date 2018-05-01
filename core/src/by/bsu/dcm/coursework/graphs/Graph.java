@@ -27,6 +27,10 @@ public class Graph implements Disposable {
         TopLeft, TopRight, BottomRight, BottomLeft
     }
 
+    public enum NameAlign {
+        Top, Bottom
+    }
+
     private static final short DEFAULT_WIDTH = 1280;
     private static final short DEFAULT_HEIGHT = 720;
     private static final byte DEFAULT_CELL_NUM_X = 16;
@@ -38,6 +42,8 @@ public class Graph implements Disposable {
 
     private GraphBackground background;
     private GraphAxis axis;
+    private GraphName name;
+    private NameAlign nameAlign;
     private GraphDescription description;
     private DescriptionAlign descriptionAlign;
 
@@ -62,6 +68,8 @@ public class Graph implements Disposable {
     public Graph() {
         background = new GraphBackground(new Color(1.0f, 1.0f, 1.0f, 1.0f), new Color(0.75f, 0.75f, 0.75f, 1.0f), 1.0f);
         axis = new GraphAxis();
+        name = new GraphName();
+        nameAlign = NameAlign.Top;
         description = new GraphDescription();
         descriptionAlign = DescriptionAlign.BottomLeft;
 
@@ -242,15 +250,6 @@ public class Graph implements Disposable {
         normalize();
     }
 
-    private boolean isDescriptionEmpty() {
-        for (GraphPoints graph : graphs) {
-            if (graph.desription != null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     private TextureRegion generateCoordsSystem(int width, int height) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         Pixmap pixmap;
@@ -402,14 +401,8 @@ public class Graph implements Disposable {
 
         batch.end();
 
-        if (!isDescriptionEmpty()) {
-            Gdx.gl30.glEnable(GL30.GL_BLEND);
-            Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-
-            description.draw(batch, renderer, descriptionAlign, graphs, width, height);
-
-            Gdx.gl30.glDisable(GL30.GL_BLEND);
-        }
+        name.draw(batch, renderer, nameAlign, width, height);
+        description.draw(batch, renderer, descriptionAlign, graphs, width, height);
 
         batch.enableBlending();
 
@@ -552,6 +545,54 @@ public class Graph implements Disposable {
         description.setSpacing(horizontal, vertical);
     }
 
+    public void setName(String name) {
+        this.name.setName(name);
+    }
+
+    public void setNameAlign(NameAlign align) {
+        nameAlign = align;
+    }
+
+    public void setNameBackgroundColor(Color color) {
+        name.setBackgroundColor(color);
+    }
+
+    public void setNameBackgroundColor(float r, float g, float b, float a) {
+        name.setBackgroundColor(r, g, b, a);
+    }
+
+    public void setNameBorderLineColor(Color color) {
+        name.setBorderLineColor(color);
+    }
+
+    public void setNameBorderLineColor(float r, float g, float b, float a) {
+        name.setBorderLineColor(r, g, b, a);
+    }
+
+    public void setNameBorderLineWidth(float width) {
+        name.setBorderLineWidth(width);
+    }
+
+    public void setNameTextPadding(float top, float right, float bottom, float left) {
+        name.setTextPadding(top, right, bottom, left);
+    }
+
+    public void setNamePadding(float padding) {
+        name.setPadding(padding);
+    }
+
+    public void setNameFontSize(int size) {
+        name.setFontSize(size);
+    }
+
+    public void setNameFontColor(Color color) {
+        name.setFontColor(color);
+    }
+
+    public void setNameFontColor(float r, float g, float b, float a) {
+        name.setFontColor(r, g, b, a);
+    }
+
     public void setEqualAxisScaleMarks(boolean equal) {
         axis.setEqualAxisScaleMarks(equal);
     }
@@ -567,6 +608,8 @@ public class Graph implements Disposable {
     @Override
     public void dispose() {
         axis.dispose();
+        name.dispose();
+        description.dispose();
         renderer.dispose();
         batch.dispose();
     }

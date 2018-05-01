@@ -3,6 +3,7 @@ package by.bsu.dcm.coursework.graphs;
 import by.bsu.dcm.coursework.AssetsManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -50,7 +51,7 @@ class GraphDescription implements Disposable {
         spacingVertical = 4.0f;
     }
 
-    private void drawBackground(ShapeRenderer renderer, List<GraphPoints> graphs, Vector2 bottomLeft, Vector2 rectSize) {
+    private void drawBackground(ShapeRenderer renderer, List<GraphPoints> graphs, Vector2 bottomLeft, Vector2 rectSize, float lineHeight) {
         Vector2 currentLine = new Vector2();
 
         renderer.begin(ShapeType.Filled);
@@ -61,22 +62,22 @@ class GraphDescription implements Disposable {
         currentLine.set(bottomLeft.x + paddingLeft, bottomLeft.y + paddingBottom);
         for (GraphPoints graph : graphs) {
             renderer.setColor(graph.pointColor);
-            renderer.circle(currentLine.x + fontParam.size / 2.0f, currentLine.y + fontParam.size / 2.0f, fontParam.size / 2.0f);
-            currentLine.y += fontParam.size + spacingVertical;
+            renderer.circle(currentLine.x + lineHeight / 2.0f, currentLine.y + lineHeight / 2.0f, lineHeight / 2.0f);
+            currentLine.y += lineHeight + spacingVertical;
         }
 
         renderer.end();
     }
 
-    private void drawText(Batch batch, List<GraphPoints> graphs, Vector2 bottomLeft) {
+    private void drawText(Batch batch, List<GraphPoints> graphs, Vector2 bottomLeft, float lineHeight) {
         Vector2 currentLine = new Vector2();
 
         batch.begin();
 
-        currentLine.set(bottomLeft.x + paddingLeft + fontParam.size + spacingHorizontal, bottomLeft.y + paddingBottom);
+        currentLine.set(bottomLeft.x + paddingLeft + lineHeight + spacingHorizontal, bottomLeft.y + paddingBottom);
         for (GraphPoints graph : graphs) {
-            font.draw(batch, graph.desription, currentLine.x, currentLine.y + 3.0f * fontParam.size / 4.0f);
-            currentLine.y += fontParam.size + spacingVertical;
+            font.draw(batch, graph.desription, currentLine.x, currentLine.y + lineHeight);
+            currentLine.y += lineHeight + spacingVertical;
         }
 
         batch.end();
@@ -106,16 +107,22 @@ class GraphDescription implements Disposable {
         Vector2 bottomLeft = new Vector2();
         Vector2 rectSize = new Vector2();
         float maxWidth = Float.NEGATIVE_INFINITY;
+        float lineHeight = Float.NEGATIVE_INFINITY;
+
+        if (isEmpty(graphs)) {
+            return;
+        }
 
         renderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
 
         for (GraphPoints graph : graphs) {
             layout.setText(font, graph.desription);
             maxWidth = (layout.width > maxWidth) ? layout.width : maxWidth;
+            lineHeight = (layout.height > lineHeight) ? layout.height : lineHeight;
         }
 
-        rectSize.set(paddingLeft + fontParam.size + spacingHorizontal + maxWidth + paddingRight,
-                paddingBottom + (graphs.size() - 1) * spacingVertical + graphs.size() * fontParam.size + paddingTop);
+        rectSize.set(paddingLeft + lineHeight + spacingHorizontal + maxWidth + paddingRight,
+                paddingBottom + (graphs.size() - 1) * spacingVertical + graphs.size() * lineHeight + paddingTop);
         switch (align) {
             case TopLeft:
                 bottomLeft.set(borderLineWidth, height - borderLineWidth - rectSize.y);
@@ -130,9 +137,23 @@ class GraphDescription implements Disposable {
                 bottomLeft.set(borderLineWidth, borderLineWidth);
         }
 
-        drawBackground(renderer, graphs, bottomLeft, rectSize);
-        drawText(batch, graphs, bottomLeft);
+        Gdx.gl30.glEnable(GL30.GL_BLEND);
+        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+
+        drawBackground(renderer, graphs, bottomLeft, rectSize, lineHeight);
+        drawText(batch, graphs, bottomLeft, lineHeight);
         drawBorder(renderer, bottomLeft, rectSize);
+
+        Gdx.gl30.glDisable(GL30.GL_BLEND);
+    }
+
+    private boolean isEmpty(List<GraphPoints> graphs) {
+        for (GraphPoints graph : graphs) {
+            if (graph.desription != null || !graph.desription.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void setBackgroundColor(Color color) {
