@@ -1,6 +1,6 @@
 package by.bsu.dcm.coursework.graphs;
 
-import by.bsu.dcm.coursework.AssetsManager;
+import by.bsu.dcm.coursework.ResourceManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -34,10 +33,10 @@ class GraphDescription implements Disposable {
 
     GraphDescription() {
         fontParam = new FreeTypeFontParameter();
-        fontParam.size = 12;
+        fontParam.size = 15;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
 
         backgroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
         borderLineColor = new Color(0.75f, 0.75f, 0.75f, 1.0f);
@@ -92,10 +91,14 @@ class GraphDescription implements Disposable {
         renderer.begin(ShapeType.Line);
         renderer.setColor(borderLineColor);
 
-        renderer.line(bottomLeft.x - linePadding, bottomLeft.y - linePadding, bottomLeft.x - linePadding, topRight.y + linePadding);
-        renderer.line(bottomLeft.x - linePadding, topRight.y + linePadding, topRight.x + linePadding, topRight.y + linePadding);
-        renderer.line(topRight.x + linePadding, bottomLeft.y - linePadding, topRight.x + linePadding, topRight.y + linePadding);
-        renderer.line(bottomLeft.x - linePadding, bottomLeft.y - linePadding, topRight.x + linePadding, bottomLeft.y - linePadding);
+        renderer.line(bottomLeft.x - linePadding, bottomLeft.y - linePadding,
+                bottomLeft.x - linePadding, topRight.y + borderLineWidth);
+        renderer.line(bottomLeft.x - borderLineWidth, topRight.y + linePadding,
+                topRight.x + borderLineWidth, topRight.y + linePadding);
+        renderer.line(topRight.x + linePadding, bottomLeft.y - borderLineWidth,
+                topRight.x + linePadding, topRight.y + borderLineWidth);
+        renderer.line(bottomLeft.x - borderLineWidth, bottomLeft.y - linePadding,
+                topRight.x + borderLineWidth, bottomLeft.y - linePadding);
 
         renderer.end();
 
@@ -112,8 +115,6 @@ class GraphDescription implements Disposable {
         if (isEmpty(graphs)) {
             return;
         }
-
-        renderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
 
         for (GraphPoints graph : graphs) {
             layout.setText(font, graph.desription);
@@ -179,19 +180,19 @@ class GraphDescription implements Disposable {
     public void setFontSize(int size) {
         font.dispose();
         fontParam.size = size;
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setFontColor(Color color) {
         font.dispose();
         fontParam.color.set(color);
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setFontColor(float r, float g, float b, float a) {
         font.dispose();
         fontParam.color.set(r, g, b, a);
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setPadding(float top, float right, float bottom, float left) {

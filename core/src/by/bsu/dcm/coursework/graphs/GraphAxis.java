@@ -1,8 +1,9 @@
 package by.bsu.dcm.coursework.graphs;
 
-import by.bsu.dcm.coursework.AssetsManager;
+import by.bsu.dcm.coursework.ResourceManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -20,9 +21,12 @@ class GraphAxis implements Disposable {
     private FreeTypeFontParameter fontParam;
     private BitmapFont font;
     private DecimalFormat decimalFormat;
+    private String xAxisName;
+    private String yAxisName;
 
     private Color axisColor;
     private float axisLineWidth;
+    private float axisNamesPadding;
 
     private float scaleMarkLineTopLength;
     private float scaleMarkLineBottomLength;
@@ -41,7 +45,7 @@ class GraphAxis implements Disposable {
         fontParam.size = 12;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
 
         scaleMarkLineTopLength = 4.0f;
         scaleMarkLineBottomLength = 4.0f;
@@ -51,6 +55,10 @@ class GraphAxis implements Disposable {
 
         horizontalScaleMarkOffset = new Vector2(0.0f, 10.0f);
         verticalScaleMarkOffset = new Vector2(10.0f, 0.0f);
+
+        xAxisName = "x";
+        yAxisName = "y";
+        axisNamesPadding = 5.0f;
     }
 
     private void drawAxis(ShapeRenderer renderer, Vector2 centerAxisNorm, float[] scalesXNorm, float[] scalesYNorm, int width, int height) {
@@ -95,7 +103,7 @@ class GraphAxis implements Disposable {
 
     private void drawScaleMarks(Batch batch, Vector2 centerAxis, Vector2 centerAxisNorm, float[] scalesX, float[] scalesY,
                                 float[] scalesXNorm, float[] scalesYNorm, int scalesXPow, int scalesYPow, int width, int height) {
-        GlyphLayout scaleMark = new GlyphLayout();
+        GlyphLayout layout = new GlyphLayout();
         Vector2 curOffset = new Vector2();
         String centerXMark;
         float horScaleMarksOffsetSign;
@@ -112,46 +120,59 @@ class GraphAxis implements Disposable {
         decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
         for (int i = 0; i < scalesXNorm.length; i++) {
             if (scalesX[i] != centerAxis.x) {
-                scaleMark.setText(font, decimalFormat.format(scalesX[i]));
+                layout.setText(font, decimalFormat.format(scalesX[i]));
 
                 curOffset.y = additionalOffset;
-                curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
-                curOffset.x = -scaleMark.width / 2.0f;
+                curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : layout.height;
+                curOffset.x = -layout.width / 2.0f;
 
-                font.draw(batch, scaleMark, scalesXNorm[i] * width + horizontalScaleMarkOffset.x + curOffset.x,
+                font.draw(batch, layout, scalesXNorm[i] * width + horizontalScaleMarkOffset.x + curOffset.x,
                         centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
             }
         }
+        layout.setText(font, xAxisName);
+        curOffset.y = additionalOffset;
+        curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : layout.height;
+        curOffset.x = -layout.width - axisNamesPadding;
+        font.draw(batch, layout, width + curOffset.x,
+                centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
 
         decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
         for (int i = 0; i < scalesYNorm.length; i++) {
             if (scalesY[i] != centerAxis.y) {
-                scaleMark.setText(font, decimalFormat.format(scalesY[i]));
+                layout.setText(font, decimalFormat.format(scalesY[i]));
 
                 curOffset.x = additionalOffset;
-                curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
-                curOffset.y = scaleMark.height / 2.0f;
+                curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : layout.width;
+                curOffset.y = layout.height / 2.0f;
 
-                font.draw(batch, scaleMark, centerAxisNorm.x * width +
+                font.draw(batch, layout, centerAxisNorm.x * width +
                                 vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
                         scalesYNorm[i] * height + verticalScaleMarkOffset.y + curOffset.y);
             }
         }
+        layout.setText(font, yAxisName);
+        curOffset.x = additionalOffset;
+        curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : layout.width;
+        curOffset.y = -axisNamesPadding;
+        font.draw(batch, layout, centerAxisNorm.x * width +
+                        vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
+                height + curOffset.y);
 
         decimalFormat.applyPattern(calcScaleMarkFormat(scalesXPow));
         centerXMark = decimalFormat.format(centerAxis.x);
         if (centerAxis.x == centerAxis.y) {
-            scaleMark.setText(font, centerXMark);
+            layout.setText(font, centerXMark);
         } else {
             decimalFormat.applyPattern(calcScaleMarkFormat(scalesYPow));
-            scaleMark.setText(font, centerXMark + ", " + decimalFormat.format(centerAxis.y));
+            layout.setText(font, centerXMark + ", " + decimalFormat.format(centerAxis.y));
         }
 
         curOffset.set(additionalOffset, additionalOffset);
-        curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : scaleMark.width;
-        curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : scaleMark.height;
+        curOffset.x += (centerAxisNorm.x >= 0.5f) ? 0.0f : layout.width;
+        curOffset.y += (centerAxisNorm.y <= 0.5f) ? 0.0f : layout.height;
 
-        font.draw(batch, scaleMark, centerAxisNorm.x * width +
+        font.draw(batch, layout, centerAxisNorm.x * width +
                         vertScaleMarksOffsetSign * (verticalScaleMarkOffset.x + curOffset.x),
                 centerAxisNorm.y * height + horScaleMarksOffsetSign * (horizontalScaleMarkOffset.y + curOffset.y));
 
@@ -160,8 +181,13 @@ class GraphAxis implements Disposable {
 
     public void draw(Batch batch, ShapeRenderer renderer, Vector2 centerAxis, Vector2 centerAxisNorm, float[] scalesX, float[] scalesY,
                      float[] scalesXNorm, float[] scalesYNorm, int scalesXPow, int scalesYPow, int width, int height) {
+        Gdx.gl30.glEnable(GL30.GL_BLEND);
+        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+
         drawAxis(renderer, centerAxisNorm, scalesXNorm, scalesYNorm, width, height);
         drawScaleMarks(batch, centerAxis, centerAxisNorm, scalesX, scalesY, scalesXNorm, scalesYNorm, scalesXPow, scalesYPow, width, height);
+
+        Gdx.gl30.glDisable(GL30.GL_BLEND);
     }
 
     public void setAxisColor(Color color) {
@@ -202,19 +228,28 @@ class GraphAxis implements Disposable {
     public void setFontSize(int size) {
         font.dispose();
         fontParam.size = size;
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setFontColor(Color color) {
         font.dispose();
         fontParam.color.set(color);
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setFontColor(float r, float g, float b, float a) {
         font.dispose();
         fontParam.color.set(r, g, b, a);
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
+    }
+
+    public void setAxisNames(String xAxisName, String yAxisName) {
+        this.xAxisName = xAxisName;
+        this.yAxisName = yAxisName;
+    }
+
+    public void setAxisNamesPadding(float padding) {
+        axisNamesPadding = padding;
     }
 
     public void setEqualAxisScaleMarks(boolean equal) {

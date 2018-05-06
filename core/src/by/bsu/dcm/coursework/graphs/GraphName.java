@@ -1,6 +1,6 @@
 package by.bsu.dcm.coursework.graphs;
 
-import by.bsu.dcm.coursework.AssetsManager;
+import by.bsu.dcm.coursework.ResourceManager;
 import by.bsu.dcm.coursework.graphs.Graph.NameAlign;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Disposable;
 
@@ -31,10 +32,10 @@ class GraphName implements Disposable {
 
     GraphName() {
         fontParam = new FreeTypeFontParameter();
-        fontParam.size = 12;
+        fontParam.size = 15;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
 
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
 
         backgroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
         borderLineColor = new Color(0.75f, 0.75f, 0.75f, 1.0f);
@@ -45,7 +46,7 @@ class GraphName implements Disposable {
         textPaddingBottom = 4.0f;
         textPaddingLeft = 4.0f;
 
-        padding = 20.0f;
+        padding = 10.0f;
     }
 
     public void draw(Batch batch, ShapeRenderer renderer, NameAlign align, int width, int height) {
@@ -58,6 +59,8 @@ class GraphName implements Disposable {
         if (isEmpty()) {
             return;
         }
+
+        renderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
 
         layout.setText(font, name);
 
@@ -92,10 +95,14 @@ class GraphName implements Disposable {
         renderer.begin(ShapeType.Line);
         renderer.setColor(borderLineColor);
 
-        renderer.line(bottomLeft.x - linePadding, bottomLeft.y - linePadding, bottomLeft.x - linePadding, topRight.y + linePadding);
-        renderer.line(bottomLeft.x - linePadding, topRight.y + linePadding, topRight.x + linePadding, topRight.y + linePadding);
-        renderer.line(topRight.x + linePadding, topRight.y + linePadding, topRight.x + linePadding, bottomLeft.y - linePadding);
-        renderer.line(bottomLeft.x - linePadding, bottomLeft.y - linePadding, topRight.x + linePadding, bottomLeft.y - linePadding);
+        renderer.line(bottomLeft.x - linePadding, bottomLeft.y - linePadding,
+                bottomLeft.x - linePadding, topRight.y + borderLineWidth);
+        renderer.line(bottomLeft.x - borderLineWidth, topRight.y + linePadding,
+                topRight.x + borderLineWidth, topRight.y + linePadding);
+        renderer.line(topRight.x + linePadding, topRight.y + borderLineWidth,
+                topRight.x + linePadding, bottomLeft.y - borderLineWidth);
+        renderer.line(bottomLeft.x - borderLineWidth, bottomLeft.y - linePadding,
+                topRight.x + borderLineWidth, bottomLeft.y - linePadding);
 
         renderer.end();
 
@@ -145,19 +152,19 @@ class GraphName implements Disposable {
     public void setFontSize(int size) {
         font.dispose();
         fontParam.size = size;
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setFontColor(Color color) {
         font.dispose();
         fontParam.color.set(color);
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     public void setFontColor(float r, float g, float b, float a) {
         font.dispose();
         fontParam.color.set(r, g, b, a);
-        font = AssetsManager.getFont(fontParam);
+        font = ResourceManager.getFont(fontParam);
     }
 
     @Override

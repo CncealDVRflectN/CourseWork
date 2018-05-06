@@ -27,6 +27,8 @@ class GraphBackground {
 
         Gdx.gl30.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
         Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        Gdx.gl30.glEnable(GL30.GL_BLEND);
+        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
         Gdx.gl30.glLineWidth(markupLineWidth);
 
         renderer.begin(ShapeRenderer.ShapeType.Line);
@@ -45,6 +47,7 @@ class GraphBackground {
         renderer.end();
 
         Gdx.gl30.glLineWidth(1.0f);
+        Gdx.gl30.glDisable(GL30.GL_BLEND);
     }
 
     public void setBackgroundColor(Color color) {

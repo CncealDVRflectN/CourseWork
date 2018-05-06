@@ -1,8 +1,5 @@
 package by.bsu.dcm.coursework.graphs;
 
-import by.bsu.dcm.coursework.AssetsManager;
-import by.bsu.dcm.coursework.graphics.Graphics;
-import by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
 import by.bsu.dcm.coursework.math.Util;
 import by.bsu.dcm.coursework.util.Pair;
 import com.badlogic.gdx.Gdx;
@@ -38,8 +35,6 @@ public class Graph implements Disposable {
     private static final float[] SCALES = {0.1f, 0.2f, 0.25f, 0.5f, 1.0f};
     private static final int[] DEFAULT_SCALE_POWS = {-1, -1, -2, -1, 0};
 
-    private AntiAliasing graphsAA;
-
     private GraphBackground background;
     private GraphAxis axis;
     private GraphName name;
@@ -73,8 +68,6 @@ public class Graph implements Disposable {
         description = new GraphDescription();
         descriptionAlign = DescriptionAlign.BottomLeft;
 
-        graphsAA = AntiAliasing.noAA;
-
         scaleStep = new Vector2();
 
         graphs = new ArrayList<>();
@@ -91,15 +84,17 @@ public class Graph implements Disposable {
         graphsMax.set(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
         graphsMin.set(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY);
 
-        graphs.forEach(graph -> {
-            for (Vector2 node : graph.points) {
-                graphsMax.x = (node.x > graphsMax.x) ? node.x : graphsMax.x;
-                graphsMax.y = (node.y > graphsMax.y) ? node.y : graphsMax.y;
+        for (GraphPoints graph : graphs) {
+            if (graph.points != null) {
+                for (Vector2 node : graph.points) {
+                    graphsMax.x = (node.x > graphsMax.x) ? node.x : graphsMax.x;
+                    graphsMax.y = (node.y > graphsMax.y) ? node.y : graphsMax.y;
 
-                graphsMin.x = (node.x < graphsMin.x) ? node.x : graphsMin.x;
-                graphsMin.y = (node.y < graphsMin.y) ? node.y : graphsMin.y;
+                    graphsMin.x = (node.x < graphsMin.x) ? node.x : graphsMin.x;
+                    graphsMin.y = (node.y < graphsMin.y) ? node.y : graphsMin.y;
+                }
             }
-        });
+        }
     }
 
     private Pair<Float, Integer> calcScaleStep(float dif, int cellNum) {
@@ -250,55 +245,12 @@ public class Graph implements Disposable {
         normalize();
     }
 
-    private TextureRegion generateCoordsSystem(int width, int height) {
-        FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-        Pixmap pixmap;
-        Matrix4 projMatrix = new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height);
-        TextureRegion result;
-
-        renderer.setProjectionMatrix(projMatrix);
-        batch.setProjectionMatrix(projMatrix);
-
-        fbo.begin();
-
-        Gdx.gl30.glEnable(GL30.GL_BLEND);
-        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-
-        background.draw(renderer, scalesXNorm, scalesYNorm, width, height);
-        axis.draw(batch, renderer, centerAxis, centerAxisNorm, scalesX, scalesY, scalesXNorm, scalesYNorm,
-                scalesXPow, scalesYPow, width, height);
-
-        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
-
-        fbo.end();
-
-        Gdx.gl30.glDisable(GL30.GL_BLEND);
-
-        result = new TextureRegion(new Texture(pixmap));
-        result.flip(false, true);
-
-        fbo.dispose();
-        pixmap.dispose();
-
-        return result;
-    }
-
-    private TextureRegion generateGraphsRaw(int width, int height, float scaleMul) {
-        FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
-        Pixmap pixmap;
-        TextureRegion result;
-
-        renderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
-
-        fbo.begin();
-
-        Gdx.gl30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+    private void drawGraphs(int width, int height) {
         Gdx.gl30.glEnable(GL30.GL_BLEND);
         Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
 
         graphsNorm.forEach(graphNorm -> {
-            Gdx.gl30.glLineWidth(graphNorm.lineWidth * scaleMul);
+            Gdx.gl30.glLineWidth(graphNorm.lineWidth);
 
             renderer.begin(ShapeRenderer.ShapeType.Line);
             renderer.setColor(graphNorm.lineColor);
@@ -310,101 +262,41 @@ public class Graph implements Disposable {
 
             renderer.end();
 
-            Gdx.gl30.glLineWidth(scaleMul);
+            Gdx.gl30.glLineWidth(1.0f);
 
             renderer.begin(ShapeRenderer.ShapeType.Filled);
             renderer.setColor(graphNorm.pointColor);
 
             for (int i = 0; i < graphNorm.points.length; i++) {
-                renderer.circle(graphNorm.points[i].x * width, graphNorm.points[i].y * height, graphNorm.pointSize * scaleMul);
+                renderer.circle(graphNorm.points[i].x * width, graphNorm.points[i].y * height, graphNorm.pointSize);
             }
 
             renderer.end();
         });
 
-        pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
-
-        fbo.end();
-
         Gdx.gl30.glDisable(GL30.GL_BLEND);
-
-        result = new TextureRegion(new Texture(pixmap));
-        result.flip(false, true);
-
-        fbo.dispose();
-        pixmap.dispose();
-
-        return result;
-    }
-
-    private TextureRegion generateGraphs(int width, int height) {
-        TextureRegion result;
-        TextureRegion buffer;
-
-        switch (graphsAA) {
-            case SSAA4:
-                buffer = generateGraphsRaw(2 * width, 2 * height, 2.0f);
-                result = Graphics.calcDownsample4(buffer);
-                buffer.getTexture().dispose();
-                return result;
-            case FXAA:
-                buffer = generateGraphsRaw(width, height, 1.0f);
-                result = Graphics.calcFXAA(buffer);
-                buffer.getTexture().dispose();
-                return result;
-            case SSAA4_FXAA:
-                buffer = generateGraphsRaw(2 * width, 2 * height, 2.0f);
-                result = Graphics.calcFXAA(buffer);
-                buffer.getTexture().dispose();
-                buffer = result;
-                result = Graphics.calcDownsample4(buffer);
-                buffer.getTexture().dispose();
-                return result;
-            default:
-                return generateGraphsRaw(width, height, 1.0f);
-        }
     }
 
     public TextureRegion getGraph(int width, int height) {
         FrameBuffer fbo = new FrameBuffer(Pixmap.Format.RGBA8888, width, height, false);
         Pixmap pixmap;
         TextureRegion result;
-        TextureRegion coordsSystem;
-        TextureRegion graphsTex;
 
         calcParams((float) width / (float) DEFAULT_WIDTH, (float) height / (float) DEFAULT_HEIGHT);
-        coordsSystem = generateCoordsSystem(width, height);
-        graphsTex = generateGraphs(width, height);
 
-        batch.setShader(AssetsManager.getGraphBlendShader());
+        renderer.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
         batch.setProjectionMatrix(new Matrix4().setToOrtho2D(0.0f, 0.0f, width, height));
-        batch.disableBlending();
 
         fbo.begin();
 
-        Gdx.gl30.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        background.draw(renderer, scalesXNorm, scalesYNorm, width, height);
+        axis.draw(batch, renderer, centerAxis, centerAxisNorm, scalesX, scalesY, scalesXNorm, scalesYNorm,
+                scalesXPow, scalesYPow, width, height);
 
-        batch.begin();
-
-        AssetsManager.getGraphBlendShader().setUniformi("u_background", 1);
-
-        Gdx.gl30.glActiveTexture(GL30.GL_TEXTURE1);
-        coordsSystem.getTexture().bind();
-
-        Gdx.gl30.glActiveTexture(GL30.GL_TEXTURE0);
-        graphsTex.getTexture().bind();
-
-
-        batch.draw(coordsSystem, 0.0f, 0.0f);
-        batch.draw(graphsTex, 0.0f, 0.0f);
-
-        batch.end();
+        drawGraphs(width, height);
 
         name.draw(batch, renderer, nameAlign, width, height);
         description.draw(batch, renderer, descriptionAlign, graphs, width, height);
-
-        batch.enableBlending();
 
         pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, fbo.getWidth(), fbo.getHeight());
 
@@ -415,8 +307,6 @@ public class Graph implements Disposable {
 
         fbo.dispose();
         pixmap.dispose();
-        coordsSystem.getTexture().dispose();
-        graphsTex.getTexture().dispose();
 
         return result;
     }
@@ -499,6 +389,14 @@ public class Graph implements Disposable {
 
     public void setAxisFontColor(float r, float g, float b, float a) {
         axis.setFontColor(r, g, b, a);
+    }
+
+    public void setAxisNames(String xAxisName, String yAxisName) {
+        axis.setAxisNames(xAxisName, yAxisName);
+    }
+
+    public void setAxisNamesPadding(float padding) {
+        axis.setAxisNamesPadding(padding);
     }
 
     public void setDescriptionAlign(DescriptionAlign align) {
@@ -599,10 +497,6 @@ public class Graph implements Disposable {
 
     public boolean isEqualAxisScaleMarks() {
         return axis.isEqualAxisScaleMarks();
-    }
-
-    public void setAntialiasing(AntiAliasing antialiasing) {
-        graphsAA = antialiasing;
     }
 
     @Override
