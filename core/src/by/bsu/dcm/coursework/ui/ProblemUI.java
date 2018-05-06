@@ -1,6 +1,6 @@
 package by.bsu.dcm.coursework.ui;
 
-import by.bsu.dcm.coursework.AssetsManager;
+import by.bsu.dcm.coursework.ResourceManager;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Disposable;
@@ -9,8 +9,8 @@ public class ProblemUI extends Table implements Disposable {
     private static final int DEFAULT_WIDTH = 1280;
     private static final int DEFAULT_HEIGHT = 720;
     private static final int DEFAULT_FONT_SIZE = 15;
-    private static final float PRESENTATION_WEIGHT = 7.75f;
-    private static final float SETTINGS_WEIGHT = 2.25f;
+    private static final float PRESENTATION_WEIGHT = 0.75f;
+    private static final float SETTINGS_WEIGHT = 0.25f;
 
     private ProblemPresentation presentation;
     private ProblemSettings problemSettings;
@@ -20,8 +20,8 @@ public class ProblemUI extends Table implements Disposable {
         fontParam = new FreeTypeFontParameter();
         fontParam.size = DEFAULT_FONT_SIZE;
 
-        presentation = new ProblemPresentation();
-        problemSettings = new ProblemSettings(presentation, AssetsManager.getSkinUI(fontParam));
+        presentation = new ProblemPresentation(ResourceManager.getSkinUI(fontParam));
+        problemSettings = new ProblemSettings(presentation, ResourceManager.getSkinUI(fontParam));
 
         add(presentation).fill();
         add(problemSettings).fill();
@@ -33,9 +33,10 @@ public class ProblemUI extends Table implements Disposable {
         getCell(problemSettings).width(width * (SETTINGS_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
 
         fontParam.size = Math.round(DEFAULT_FONT_SIZE * ((float) height / (float) DEFAULT_HEIGHT));
-        problemSettings.setSkin(AssetsManager.getSkinUI(fontParam));
+        problemSettings.setSkin(ResourceManager.getSkinUI(fontParam));
         problemSettings.resize();
-        presentation.resize(Math.round(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))), height);
+        presentation.setSkin(ResourceManager.getSkinUI(fontParam));
+        presentation.resize();
     }
 
     @Override

@@ -1,34 +1,19 @@
 package by.bsu.dcm.coursework.math.fluid;
 
-import by.bsu.dcm.coursework.math.Function;
-import by.bsu.dcm.coursework.math.Util;
-
 public class Plain extends EquilibriumFluid {
-    private static class Integrand implements Function {
-        private double[] approx;
+    private double calcIntegralTrapeze(double[] values, double step) {
+        double result = values[0] / 2.0;
+        double length = values.length - 1;
 
-        @Override
-        public double calc(int index) {
-            return approx[index];
+        for (int i = 1; i < length; i++) {
+            result += values[i];
         }
 
-        @Override
-        public int getLength() {
-            return approx.length;
-        }
-
-        @Override
-        public void setParams(Object... params) {
-            this.approx = (double[]) params[0];
-        }
-    }
-
-    public Plain() {
-        super(new Integrand());
+        return 2.0 * result * step;
     }
 
     @Override
-    protected void calcNextApproximation(double step, ProblemParams params) {
+    protected void calcNextApproximation(ProblemParams params) {
         double coef = 8.0 * step;
         double integral;
 
@@ -39,9 +24,7 @@ public class Plain extends EquilibriumFluid {
             rightVect[i] = 0.0;
         }
 
-        integrand.setParams(prevApprox);
-
-        integral = 2.0 * Util.calcIntegralTrapeze(integrand, step);
+        integral = calcIntegralTrapeze(prevApprox, step);
 
         coefsMtr[0][0] = -(1.0 - (params.bond * step * step) / (2.0 * integral));
         coefsMtr[0][1] = 1.0;
@@ -59,6 +42,11 @@ public class Plain extends EquilibriumFluid {
                     (params.bond * prevApprox[i] / integral - params.bond / 2.0 - Math.sin(params.alpha));
         }
 
-        Util.calcRightSweep(coefsMtr, rightVect, nextApprox);
+        rightSweep.calcRightSweep(coefsMtr, rightVect, nextApprox);
+    }
+
+    @Override
+    protected double calcVolumeNondimMul(double[] func) {
+        return calcIntegralTrapeze(func, step);
     }
 }

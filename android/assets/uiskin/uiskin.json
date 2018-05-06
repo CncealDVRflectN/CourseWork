@@ -62,6 +62,15 @@
         a: 1
       }
     },
+    button-disabled: {
+      name: white,
+      color: {
+        r: 0.1,
+        g: 0.1,
+        b: 0.2,
+        a: 1
+      }
+    }
     cursor: {
       name: white,
       color: {
@@ -106,6 +115,15 @@
         b: 0.14,
         a: 1
       }
+    },
+    presentation-background: {
+      name: white,
+      color: {
+        r: 0.175,
+        g: 0.175,
+        b: 0.175,
+        a: 1
+      }
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
@@ -123,19 +141,41 @@
   },
   com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
     default: {
+      disabled: button-disabled,
       down: button-down,
       up: button-default,
       over: button-over,
       font: font,
-      fontColor: white
+      fontColor: white,
+      disabledFontColor: black
     },
     toggle: {
+      disabled: button-disabled,
       down: button-down,
       up: button-default,
       checked: button-down,
       font: font,
       fontColor: white,
-      downFontColor: white
+      downFontColor: white,
+      disabledFontColor: black
+    },
+    presentation-default: {
+      down: presentation-button-down,
+      up: presentation-button-default,
+      over: presentation-button-over,
+      font: font,
+      fontColor: white,
+      downFontColor: white,
+      disabledFontColor: black
+    },
+    presentation-active: {
+      down: presentation-button-down,
+      up: presentation-button-active,
+      over: presentation-button-over,
+      font: font,
+      fontColor: white,
+      downFontColor: white,
+      disabledFontColor: black
     }
   },
   com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
@@ -187,6 +227,14 @@
     default-horizontal: {
       background: slider-background,
       knob: slider-knob
+    }
+  },
+  com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
+    default: {
+      font: font,
+      fontColor: white,
+      checkboxOn: checkbox-checked,
+      checkboxOff: checkbox-unchecked
     }
   }
 }

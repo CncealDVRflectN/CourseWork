@@ -1,73 +1,132 @@
 package by.bsu.dcm.coursework.ui;
 
-import by.bsu.dcm.coursework.graphs.Graph;
-import by.bsu.dcm.coursework.graphs.GraphPoints;
-import by.bsu.dcm.coursework.math.fluid.EquilibriumFluid;
-import by.bsu.dcm.coursework.math.fluid.ProblemResult;
 import by.bsu.dcm.coursework.math.fluid.RelaxationParams;
 import by.bsu.dcm.coursework.math.fluid.TargetBondException;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Disposable;
 
-import static by.bsu.dcm.coursework.graphics.Graphics.AntiAliasing;
+import static by.bsu.dcm.coursework.ui.PresentationWidget.Slide;
+import static com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
-public class ProblemPresentation extends Widget implements Disposable {
-    private Graph graph;
-    private TextureRegion resultGraph;
-    private GraphPoints lastPoints;
+public class ProblemPresentation extends Table implements Disposable {
+    private static final float DEFAULT_BUTTON_WIDTH = 250.0f;
 
-    private ProblemResult result;
+    private PresentationWidget presentation;
 
-    public ProblemPresentation() {
-        graph = new Graph();
+    private TextButton axisymmetricButton;
+    private TextButton plainButton;
+    private TextButton heightCoefButton;
+
+    public ProblemPresentation(Skin skin) {
+        presentation = new PresentationWidget();
+
+        axisymmetricButton = new TextButton("Axisymmetric", skin.get("presentation-default", TextButtonStyle.class));
+        plainButton = new TextButton("Plain", skin.get("presentation-default", TextButtonStyle.class));
+        heightCoefButton = new TextButton("Height coeficients", skin.get("presentation-default", TextButtonStyle.class));
+
+        setBackground(skin.getDrawable("presentation-background"));
+
+        build();
+    }
+
+    private void build() {
+        defaults().width(DEFAULT_BUTTON_WIDTH);
+        add(axisymmetricButton);
+        add(plainButton);
+        add(heightCoefButton).row();
+        add(presentation).width(0.0f).colspan(3).grow();
+
+        axisymmetricButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                presentation.setCurrentSlide(Slide.Axisymmetric);
+                axisymmetricButton.setStyle(getSkin().get("presentation-active", TextButtonStyle.class));
+                plainButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                heightCoefButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+            }
+        });
+
+        plainButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                presentation.setCurrentSlide(Slide.Plain);
+                axisymmetricButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                plainButton.setStyle(getSkin().get("presentation-active", TextButtonStyle.class));
+                heightCoefButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+            }
+        });
+
+        heightCoefButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                presentation.setCurrentSlide(Slide.HeightCoef);
+                axisymmetricButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                plainButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                heightCoefButton.setStyle(getSkin().get("presentation-active", TextButtonStyle.class));
+            }
+        });
+    }
+
+    public void generatePresentation(RelaxationParams params) throws TargetBondException {
+        presentation.generatePresentation(params);
+    }
+
+    public void setGraphsNum(int num) {
+        presentation.setGraphsNum(num);
+    }
+
+    public void setEqualAxisScaleMarks(boolean equal) {
+        presentation.setEqualAxisScaleMarks(equal);
+    }
+
+    public void setVolumeNondim(boolean nondim) {
+        presentation.setVolumeNondim(nondim);
+    }
+
+    public boolean isEqualAxisScaleMarks() {
+        return presentation.isEqualAxisScaleMarks();
+    }
+
+    public boolean isVolumeNondim() {
+        return presentation.isVolumeNondim();
+    }
+
+    public void setGenerateButton(TextButton button) {
+        presentation.setGenerateButton(button);
     }
 
     @Override
-    public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
+    public void setSkin(Skin skin) {
+        super.setSkin(skin);
 
-        if (resultGraph != null) {
-            batch.setColor(1.0f, 1.0f, 1.0f, 1.0f);
-            batch.draw(resultGraph, getX(), getY());
+        switch (presentation.getCurrentSlide()) {
+            case Axisymmetric:
+                axisymmetricButton.setStyle(getSkin().get("presentation-active", TextButtonStyle.class));
+                plainButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                heightCoefButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                break;
+            case Plain:
+                axisymmetricButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                plainButton.setStyle(getSkin().get("presentation-active", TextButtonStyle.class));
+                heightCoefButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                break;
+            default:
+                axisymmetricButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                plainButton.setStyle(getSkin().get("presentation-default", TextButtonStyle.class));
+                heightCoefButton.setStyle(getSkin().get("presentation-active", TextButtonStyle.class));
         }
     }
 
-    public void setAntialiasing(AntiAliasing antialiasing) {
-        graph.setAntialiasing(antialiasing);
-    }
-
-    public void generatePresentation(EquilibriumFluid fluid, RelaxationParams params, GraphPoints graphPoints) throws TargetBondException {
-        lastPoints = graphPoints;
-        result = EquilibriumFluid.calcRelaxation(fluid, params);
-        lastPoints.points = result.points;
-
-        if (resultGraph != null) {
-            resultGraph.getTexture().dispose();
-        }
-
-        graph.addGraph(lastPoints);
-        resultGraph = graph.getGraph(Math.round(getWidth()), Math.round(getHeight()));
-        graph.removeGraph(lastPoints);
-    }
-
-    public void resize(int width, int height) {
-        if (resultGraph != null) {
-            resultGraph.getTexture().dispose();
-        }
-        if (result != null) {
-            graph.addGraph(lastPoints);
-            resultGraph = graph.getGraph(width, height);
-            graph.removeGraph(lastPoints);
-        }
+    public void resize() {
+        presentation.resize();
     }
 
     @Override
     public void dispose() {
-        graph.dispose();
-        if (resultGraph != null) {
-            resultGraph.getTexture().dispose();
-        }
+        presentation.dispose();
     }
 }
