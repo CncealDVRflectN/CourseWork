@@ -140,29 +140,31 @@ public class ProblemSettings extends Table {
                 ErrorDialog errorDialog;
                 RelaxationParams relaxationParams = new RelaxationParams();
 
-                try {
-                    relaxationParams.alpha = Double.valueOf(alphaField.getText());
-                    relaxationParams.targetBond = Double.valueOf(bondTargetField.getText());
-                    relaxationParams.bondStep = Double.valueOf(bondStepField.getText());
-                    relaxationParams.relaxationCoefMin = Double.valueOf(relaxationCoefField.getText());
-                    relaxationParams.epsilon = Double.valueOf(epsilonField.getText());
-                    relaxationParams.splitNum = Integer.valueOf(splitNumField.getText());
+                if (!generateButton.isDisabled()) {
+                    try {
+                        relaxationParams.alpha = Double.valueOf(alphaField.getText());
+                        relaxationParams.targetBond = Double.valueOf(bondTargetField.getText());
+                        relaxationParams.bondStep = Double.valueOf(bondStepField.getText());
+                        relaxationParams.relaxationCoefMin = Double.valueOf(relaxationCoefField.getText());
+                        relaxationParams.epsilon = Double.valueOf(epsilonField.getText());
+                        relaxationParams.splitNum = Integer.valueOf(splitNumField.getText());
 
-                    presentation.generatePresentation(relaxationParams);
-                } catch (NumberFormatException e) {
-                    errorDialog = ResourceManager.getErrorDialog();
-                    getStage().addActor(errorDialog);
-                    errorDialog.setMessage("Incorrect input");
-                    errorDialog.toFront();
-                    errorDialog.setVisible(true);
-                } catch (Exception e) {
-                    errorDialog = ResourceManager.getErrorDialog();
-                    getStage().addActor(errorDialog);
-                    errorDialog.setMessage(e.toString());
-                    errorDialog.toFront();
-                    errorDialog.setVisible(true);
+                        presentation.generatePresentation(relaxationParams);
+                    } catch (NumberFormatException e) {
+                        errorDialog = ResourceManager.getErrorDialog();
+                        getStage().addActor(errorDialog);
+                        errorDialog.setMessage("Incorrect input");
+                        errorDialog.toFront();
+                        errorDialog.setVisible(true);
+                    } catch (Exception e) {
+                        errorDialog = ResourceManager.getErrorDialog();
+                        getStage().addActor(errorDialog);
+                        errorDialog.setMessage(e.toString());
+                        errorDialog.toFront();
+                        errorDialog.setVisible(true);
 
-                    e.printStackTrace();
+                        e.printStackTrace();
+                    }
                 }
             }
         });
