@@ -106,7 +106,7 @@ public abstract class EquilibriumFluid {
         double volumeNondimMul = 1.0f;
 
         if (lastParams.volumeNondim) {
-            volumeNondimMul /= calcVolumeNondimMul(func);
+            volumeNondimMul = calcVolumeNondimMul(func);
         }
 
         for (int i = 0; i < result.length; i++) {

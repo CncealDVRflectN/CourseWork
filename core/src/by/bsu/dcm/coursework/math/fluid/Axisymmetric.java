@@ -26,7 +26,7 @@ public class Axisymmetric extends EquilibriumFluid {
 
     @Override
     protected void calcNextApproximation(ProblemParams params) {
-        double integral;
+        double integralCbrt;
         double q;
 
         if (coefs == null || coefs.length != params.splitNum + 1) {
@@ -42,10 +42,10 @@ public class Axisymmetric extends EquilibriumFluid {
             rightVect[i] = 0.0;
         }
 
-        integral = calcIntegralTrapeze(prevApprox, nodes, step);
-        q = -2.0 * Math.sin(params.alpha) - params.bond * Math.pow(integral, 1.0 / 3.0) / Math.PI;
+        integralCbrt = Math.cbrt(calcIntegralTrapeze(prevApprox, nodes, step));
+        q = -2.0 * Math.sin(params.alpha) - params.bond * integralCbrt / Math.PI;
 
-        coefsMtr[0][0] = -(1.0 / step + (step / 4.0) * (params.bond / Math.pow(integral, 2.0 / 3.0)));
+        coefsMtr[0][0] = -(1.0 / step + (step / 4.0) * (params.bond / Math.pow(integralCbrt, 2.0)));
         coefsMtr[0][1] = 1.0 / step;
         coefsMtr[params.splitNum][params.splitNum] = 1.0;
 
@@ -57,7 +57,7 @@ public class Axisymmetric extends EquilibriumFluid {
             coefsMtr[i][i] = -(coefs[i] + coefs[i + 1]);
             coefsMtr[i][i + 1] = coefs[i + 1];
 
-            rightVect[i] = nodes[i] * step * step * (params.bond * prevApprox[i] / Math.pow(integral, 2.0 / 3.0) + q);
+            rightVect[i] = nodes[i] * step * step * (params.bond * prevApprox[i] / Math.pow(integralCbrt, 2.0) + q);
         }
 
         rightSweep.calcRightSweep(coefsMtr, rightVect, nextApprox);
@@ -65,6 +65,6 @@ public class Axisymmetric extends EquilibriumFluid {
 
     @Override
     protected double calcVolumeNondimMul(double[] func) {
-        return Math.pow(calcIntegralTrapeze(func, nodes, step), 1.0 / 3.0);
+        return 1.0 / Math.cbrt(calcIntegralTrapeze(func, nodes, step));
     }
 }
