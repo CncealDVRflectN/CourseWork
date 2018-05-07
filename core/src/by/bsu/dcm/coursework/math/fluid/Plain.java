@@ -47,6 +47,6 @@ public class Plain extends EquilibriumFluid {
 
     @Override
     protected double calcVolumeNondimMul(double[] func) {
-        return calcIntegralTrapeze(func, step);
+        return 1.0 / Math.sqrt(calcIntegralTrapeze(func, step));
     }
 }

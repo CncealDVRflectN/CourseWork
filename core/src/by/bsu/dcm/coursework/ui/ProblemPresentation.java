@@ -1,5 +1,6 @@
 package by.bsu.dcm.coursework.ui;
 
+import by.bsu.dcm.coursework.ResourceManager;
 import by.bsu.dcm.coursework.math.fluid.RelaxationParams;
 import by.bsu.dcm.coursework.math.fluid.TargetBondException;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -9,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Disposable;
 
+import static by.bsu.dcm.coursework.ResourceManager.UILanguage;
 import static by.bsu.dcm.coursework.ui.PresentationWidget.Slide;
 import static com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 
@@ -20,6 +22,8 @@ public class ProblemPresentation extends Table implements Disposable {
     private TextButton axisymmetricButton;
     private TextButton plainButton;
     private TextButton heightCoefButton;
+
+    private UILanguage currentUILanguage;
 
     public ProblemPresentation(Skin skin) {
         presentation = new PresentationWidget();
@@ -87,16 +91,28 @@ public class ProblemPresentation extends Table implements Disposable {
         presentation.setVolumeNondim(nondim);
     }
 
+    public void setGenerateButton(TextButton button) {
+        presentation.setGenerateButton(button);
+    }
+
+    public void setLanguage(UILanguage language) {
+        if (currentUILanguage != language) {
+            axisymmetricButton.setText(ResourceManager.getBundle(language).get("axisymmetric"));
+            plainButton.setText(ResourceManager.getBundle(language).get("plain"));
+            heightCoefButton.setText(ResourceManager.getBundle(language).get("heightCoefButton"));
+
+            presentation.setLanguage(language);
+
+            currentUILanguage = language;
+        }
+    }
+
     public boolean isEqualAxisScaleMarks() {
         return presentation.isEqualAxisScaleMarks();
     }
 
     public boolean isVolumeNondim() {
         return presentation.isVolumeNondim();
-    }
-
-    public void setGenerateButton(TextButton button) {
-        presentation.setGenerateButton(button);
     }
 
     @Override
@@ -121,7 +137,11 @@ public class ProblemPresentation extends Table implements Disposable {
         }
     }
 
-    public void resize() {
+    public void resize(float widthMul) {
+        getCell(axisymmetricButton).width(widthMul * DEFAULT_BUTTON_WIDTH);
+        getCell(plainButton).width(widthMul * DEFAULT_BUTTON_WIDTH);
+        getCell(heightCoefButton).width(widthMul * DEFAULT_BUTTON_WIDTH);
+
         presentation.resize();
     }
 

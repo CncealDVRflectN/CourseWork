@@ -7,16 +7,24 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.I18NBundle;
 
+import java.util.Locale;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public final class ResourceManager {
+    public enum UILanguage {
+        English, Russian
+    }
+
     public static final Executor THREAD_POOL = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     private static FreeTypeFontGenerator fontGenerator;
     private static FreeTypeFontParameter currentUIFontParam;
     private static Skin skinUI;
     private static ErrorDialog errorDialog;
+    private static UILanguage currentUILang;
+    private static I18NBundle currentBundle;
 
     private ResourceManager() {
     }
@@ -33,7 +41,7 @@ public final class ResourceManager {
         return current.size == next.size && current.color.equals(next.color) && current.borderStraight == next.borderStraight &&
                 current.flip == next.flip && current.genMipMaps == next.genMipMaps && current.incremental == next.incremental &&
                 current.mono == next.mono && current.borderColor.equals(next.borderColor) &&
-                current.borderGamma == next.borderGamma && current.borderWidth == next.borderWidth && current.characters.equals(next.characters) &&
+                current.borderGamma == next.borderGamma && current.borderWidth == next.borderWidth &&
                 current.gamma == next.gamma && current.magFilter.equals(next.magFilter) && current.minFilter.equals(next.minFilter) &&
                 current.hinting.equals(next.hinting) &&
                 ((current.packer == null && next.packer == null) || (current.packer != null && current.packer.equals(next.packer))) &&
@@ -56,7 +64,6 @@ public final class ResourceManager {
         currentUIFontParam.minFilter = params.minFilter;
         currentUIFontParam.magFilter = params.magFilter;
         currentUIFontParam.gamma = params.gamma;
-        currentUIFontParam.characters = params.characters;
         currentUIFontParam.borderWidth = params.borderWidth;
         currentUIFontParam.borderGamma = params.borderGamma;
         currentUIFontParam.borderColor.set(params.borderColor);
@@ -80,6 +87,9 @@ public final class ResourceManager {
             }
 
             copyFontParams(fontParameter);
+            currentUIFontParam.characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRST\n" +
+                    "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя";
+
             skinUI.add("font", getFont(currentUIFontParam), BitmapFont.class);
             skinUI.addRegions(new TextureAtlas(Gdx.files.internal("uiskin/uiskin.atlas")));
             skinUI.load(Gdx.files.internal("uiskin/uiskin.json"));
@@ -90,6 +100,22 @@ public final class ResourceManager {
 
     public static FreeTypeFontParameter getCurrentUIFontParam() {
         return currentUIFontParam;
+    }
+
+    public static I18NBundle getBundle(UILanguage language) {
+        if (language != null && currentUILang != language) {
+            switch (language) {
+                case Russian:
+                    currentBundle = I18NBundle.createBundle(Gdx.files.internal("i18n/Bundle"), new Locale("ru", "", ""));
+                    break;
+                default:
+                    currentBundle = I18NBundle.createBundle(Gdx.files.internal("i18n/Bundle"), new Locale("", "", ""));
+            }
+
+            currentUILang = language;
+        }
+
+        return currentBundle;
     }
 
     public static synchronized ErrorDialog getErrorDialog() {

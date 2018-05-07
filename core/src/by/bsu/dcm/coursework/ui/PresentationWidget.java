@@ -21,20 +21,21 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static by.bsu.dcm.coursework.ResourceManager.*;
+
 public class PresentationWidget extends Widget implements Disposable {
     public enum Slide {
         Axisymmetric, Plain, HeightCoef
     }
 
-    private static final String AXISYMMETRIC_GRAPH_NAME = "Axisymmetric solution";
-    private static final String PLAIN_GRAPH_NAME = "Plain solution";
-    private static final String HEIGHT_COEF_GRAPH_NAME = "Height coeficients";
     private static final String AXISYM_X_AXIS_NAME = "r";
     private static final String AXISYM_Y_AXIS_NAME = "z";
     private static final String PLAIN_X_AXIS_NAME = "x";
     private static final String PLAIN_Y_AXIS_NAME = "y";
     private static final String HEIGHT_COEF_X_AXIS_NAME = "Bo";
     private static final String HEIGHT_COEF_Y_AXIS_NAME = "k";
+
+    private UILanguage currentUILanguage;
 
     private Slide currentSlide;
     private TextButton generateButton;
@@ -94,13 +95,13 @@ public class PresentationWidget extends Widget implements Disposable {
         params.volumeNondim = volumeNondim;
 
         heightCoefs.setGraphHolder(heightCoefGraph);
-        heightCoefs.setName(HEIGHT_COEF_GRAPH_NAME);
+        heightCoefs.setName(ResourceManager.getBundle(currentUILanguage).get("heightCoefsGraphName"));
 
         axisymmetric.setFluid(axisymmetricFluid);
         axisymmetric.setFluidGraphParams(axisymmetricGraphParams);
         axisymmetric.setGraphHolder(axisymmetricGraph);
         axisymmetric.setParams(params);
-        axisymmetric.setProblemName(AXISYMMETRIC_GRAPH_NAME);
+        axisymmetric.setProblemName(ResourceManager.getBundle(currentUILanguage).get("axisymmetricGraphName"));
         axisymmetric.setAxisNames(AXISYM_X_AXIS_NAME, AXISYM_Y_AXIS_NAME);
         axisymmetric.setFluidsBarrier(fluidsBarrier);
         axisymmetric.setHeightCoefRunnable(heightCoefs);
@@ -110,7 +111,7 @@ public class PresentationWidget extends Widget implements Disposable {
         plain.setFluidGraphParams(plainGraphParams);
         plain.setGraphHolder(plainGraph);
         plain.setParams(params);
-        plain.setProblemName(PLAIN_GRAPH_NAME);
+        plain.setProblemName(ResourceManager.getBundle(currentUILanguage).get("plainGraphName"));
         plain.setAxisNames(PLAIN_X_AXIS_NAME, PLAIN_Y_AXIS_NAME);
         plain.setFluidsBarrier(fluidsBarrier);
         plain.setHeightCoefRunnable(heightCoefs);
@@ -118,14 +119,15 @@ public class PresentationWidget extends Widget implements Disposable {
 
         lastParams = params;
 
-        ResourceManager.THREAD_POOL.execute(axisymmetric);
-        ResourceManager.THREAD_POOL.execute(plain);
+        THREAD_POOL.execute(axisymmetric);
+        THREAD_POOL.execute(plain);
     }
 
     private void generateGraphsParams() {
         Color axisymColor = new Color(1.0f, 0.0f, 0.0f, 0.75f);
         Color plainColor = new Color(0.0f, 0.0f, 1.0f, 0.75f);
-        float colorStep = (graphsNum == 1) ? 0.0f : 0.75f / (graphsNum - 1);
+        float colorStepGreen = (graphsNum == 1) ? 0.0f : 0.8f / (graphsNum - 1);
+        float colorStepOpposite = (graphsNum == 1) ? 0.0f : 0.5f / (graphsNum - 1);
 
         axisymmetricGraphParams = new GraphPoints[graphsNum];
         plainGraphParams = new GraphPoints[graphsNum];
@@ -137,14 +139,12 @@ public class PresentationWidget extends Widget implements Disposable {
         axisymCoefGraphParams.pointColor.set(axisymColor);
         axisymCoefGraphParams.lineWidth = graphLineWidth;
         axisymCoefGraphParams.lineColor.set(axisymColor);
-        axisymCoefGraphParams.desription = "Axisymmetric height coeficient";
 
         plainCoefGraphParams = new GraphPoints();
         plainCoefGraphParams.pointSize = graphPointSize;
         plainCoefGraphParams.pointColor.set(plainColor);
         plainCoefGraphParams.lineWidth = graphLineWidth;
         plainCoefGraphParams.lineColor.set(plainColor);
-        plainCoefGraphParams.desription = "Plain height coeficient";
 
         for (int i = 0; i < graphsNum; i++) {
             axisymmetricGraphParams[i] = new GraphPoints();
@@ -159,10 +159,12 @@ public class PresentationWidget extends Widget implements Disposable {
             plainGraphParams[i].lineWidth = graphLineWidth;
             plainGraphParams[i].lineColor.set(plainColor);
 
-            axisymColor.r -= colorStep;
-            axisymColor.g += colorStep;
-            plainColor.b -= colorStep;
-            plainColor.g += colorStep;
+            axisymColor.r -= colorStepGreen;
+            axisymColor.g += colorStepGreen;
+            axisymColor.b += colorStepOpposite;
+            plainColor.b -= colorStepGreen;
+            plainColor.g += colorStepGreen;
+            plainColor.r += colorStepOpposite;
         }
     }
 
@@ -210,6 +212,15 @@ public class PresentationWidget extends Widget implements Disposable {
 
     public void setVolumeNondim(boolean nondim) {
         volumeNondim = nondim;
+    }
+
+    public void setLanguage(UILanguage language) {
+        if (currentUILanguage != language) {
+            axisymCoefGraphParams.desription = ResourceManager.getBundle(language).get("axisymmetric");
+            plainCoefGraphParams.desription = ResourceManager.getBundle(language).get("plain");
+
+            currentUILanguage = language;
+        }
     }
 
     public boolean isEqualAxisScaleMarks() {
@@ -284,7 +295,8 @@ public class PresentationWidget extends Widget implements Disposable {
 
                 for (int i = 0; i < result.length; i++) {
                     fluidGraphParams[i].points = result[i].points;
-                    fluidGraphParams[i].desription = String.format(Locale.ENGLISH, "Bond number = %f", result[i].bond);
+                    fluidGraphParams[i].desription = String.format(Locale.ENGLISH, "%s = %f",
+                            ResourceManager.getBundle(currentUILanguage).get("bondGraphDescription"), result[i].bond);
                 }
 
                 Gdx.app.postRunnable(new DrawRunnable(problemName, xAxisName, yAxisName, graphHolder, fluidGraphParams, equalAxisScaleMarks));
@@ -294,7 +306,7 @@ public class PresentationWidget extends Widget implements Disposable {
 
                 fluidsBarrier.await(5000, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
-                ErrorDialog errorDialog = ResourceManager.getErrorDialog();
+                ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);
                 errorDialog.setMessage(problemName + ": " + e.getMessage());
                 errorDialog.toFront();
@@ -375,7 +387,7 @@ public class PresentationWidget extends Widget implements Disposable {
                 Gdx.app.postRunnable(new DrawRunnable(name, HEIGHT_COEF_X_AXIS_NAME, HEIGHT_COEF_Y_AXIS_NAME,
                         graphHolder, coefGraphs.toArray(graphs), false));
             } catch (Exception e) {
-                ErrorDialog errorDialog = ResourceManager.getErrorDialog();
+                ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);
                 errorDialog.setMessage(name + ": " + e.getMessage());
                 errorDialog.toFront();
@@ -441,7 +453,7 @@ public class PresentationWidget extends Widget implements Disposable {
 
                 graphHolder.setGraph(graph.getGraph(Math.round(PresentationWidget.this.getWidth()), Math.round(PresentationWidget.this.getHeight())));
             } catch (Exception e) {
-                ErrorDialog errorDialog = ResourceManager.getErrorDialog();
+                ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);
                 errorDialog.setMessage("Draw: " + e.getMessage());
                 errorDialog.toFront();
