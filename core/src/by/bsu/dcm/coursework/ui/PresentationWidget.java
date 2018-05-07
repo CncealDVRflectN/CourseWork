@@ -34,7 +34,7 @@ public class PresentationWidget extends Widget implements Disposable {
     private static final String PLAIN_X_AXIS_NAME = "x";
     private static final String PLAIN_Y_AXIS_NAME = "y";
     private static final String HEIGHT_COEF_X_AXIS_NAME = "Bo";
-    private static final String HEIGHT_COEF_Y_AXIS_NAME = "h";
+    private static final String HEIGHT_COEF_Y_AXIS_NAME = "k";
 
     private Slide currentSlide;
     private TextButton generateButton;
