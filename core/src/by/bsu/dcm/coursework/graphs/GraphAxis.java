@@ -42,9 +42,11 @@ class GraphAxis implements Disposable {
         decimalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
         axisColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         axisLineWidth = 1.0f;
+
         fontParam.size = 12;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
-
+        fontParam.characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRST\n" +
+                "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя";
         font = ResourceManager.getFont(fontParam);
 
         scaleMarkLineTopLength = 4.0f;

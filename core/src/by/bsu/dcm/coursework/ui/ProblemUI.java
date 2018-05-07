@@ -23,20 +23,25 @@ public class ProblemUI extends Table implements Disposable {
         presentation = new ProblemPresentation(ResourceManager.getSkinUI(fontParam));
         problemSettings = new ProblemSettings(presentation, ResourceManager.getSkinUI(fontParam));
 
-        add(presentation).fill();
-        add(problemSettings).fill();
+        setFillParent(true);
+
+        defaults().fill();
+        add(presentation);
+        add(problemSettings);
     }
 
     public void resize(int width, int height) {
-        setSize(width, height);
+        float widthMul = (float) width / (float) DEFAULT_WIDTH;
+        float heightMul = (float) height / (float) DEFAULT_HEIGHT;
+
         getCell(presentation).width(width * (PRESENTATION_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
         getCell(problemSettings).width(width * (SETTINGS_WEIGHT / (PRESENTATION_WEIGHT + SETTINGS_WEIGHT))).height(height);
 
         fontParam.size = Math.round(DEFAULT_FONT_SIZE * ((float) height / (float) DEFAULT_HEIGHT));
         problemSettings.setSkin(ResourceManager.getSkinUI(fontParam));
-        problemSettings.resize();
+        problemSettings.resize(widthMul, heightMul);
         presentation.setSkin(ResourceManager.getSkinUI(fontParam));
-        presentation.resize();
+        presentation.resize(widthMul);
     }
 
     @Override

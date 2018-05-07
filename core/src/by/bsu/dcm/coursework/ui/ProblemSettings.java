@@ -2,7 +2,6 @@ package by.bsu.dcm.coursework.ui;
 
 import by.bsu.dcm.coursework.ResourceManager;
 import by.bsu.dcm.coursework.math.fluid.RelaxationParams;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -11,16 +10,23 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
 import com.badlogic.gdx.utils.Scaling;
 
+import static by.bsu.dcm.coursework.ResourceManager.*;
 import static com.badlogic.gdx.scenes.scene2d.ui.CheckBox.CheckBoxStyle;
 import static com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import static com.badlogic.gdx.scenes.scene2d.ui.SelectBox.SelectBoxStyle;
 import static com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
 import static com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldStyle;
 
 public class ProblemSettings extends Table {
+    private static final float DEFAULT_BUTTON_WIDTH = 150.0f;
+    private static final float DEFAULT_PARAMS_OFFSET = 100.0f;
+
     private final ProblemPresentation presentation;
 
+    private final SelectBox<String> languageSelectBox;
     private final CheckBox equalAxisScalesCheckBox;
     private final CheckBox volumeNondimCheckBox;
+    private final Label languageLabel;
     private final Label alphaLabel;
     private final Label bondTargetLabel;
     private final Label bondStepLabel;
@@ -37,20 +43,24 @@ public class ProblemSettings extends Table {
     private final TextField maxIterNumField;
     private final TextButton generateButton;
 
+    private UILanguage currentUILanguage;
+
     public ProblemSettings(ProblemPresentation presentation, Skin skin) {
         super(skin);
 
         this.presentation = presentation;
 
-        equalAxisScalesCheckBox = new CheckBox("Enable equal axis scales", skin);
-        volumeNondimCheckBox = new CheckBox("Nondimentionalaze by volume", skin);
-        alphaLabel = new Label("Contact angle:", skin);
-        bondTargetLabel = new Label("Target Bond number:", skin);
-        bondStepLabel = new Label("Relaxation Bond number step:", skin);
-        relaxationCoefLabel = new Label("Minimal relaxation coeficient:", skin);
-        epsilonLabel = new Label("Accuracy:", skin);
-        splitNumLabel = new Label("Number of splits:", skin);
-        maxIterNumLabel = new Label("Maximum number of iterations", skin);
+        languageSelectBox = new SelectBox<>(skin);
+        equalAxisScalesCheckBox = new CheckBox("", skin);
+        volumeNondimCheckBox = new CheckBox("", skin);
+        languageLabel = new Label("", skin);
+        alphaLabel = new Label("", skin);
+        bondTargetLabel = new Label("", skin);
+        bondStepLabel = new Label("", skin);
+        relaxationCoefLabel = new Label("", skin);
+        epsilonLabel = new Label("", skin);
+        splitNumLabel = new Label("", skin);
+        maxIterNumLabel = new Label("", skin);
         alphaField = new TextField("", skin);
         bondTargetField = new TextField("", skin);
         bondStepField = new TextField("", skin);
@@ -58,7 +68,9 @@ public class ProblemSettings extends Table {
         epsilonField = new TextField("", skin);
         splitNumField = new TextField("", skin);
         maxIterNumField = new TextField("", skin);
-        generateButton = new TextButton("Generate", skin);
+        generateButton = new TextButton("", skin);
+
+        setLanguage(UILanguage.English);
 
         setBackground(new NinePatchDrawable(skin.getPatch("settings-background")));
 
@@ -68,20 +80,11 @@ public class ProblemSettings extends Table {
     }
 
     private void build() {
-        GlyphLayout layout = new GlyphLayout();
-
-        layout.setText(generateButton.getStyle().font, generateButton.getText());
+        languageSelectBox.setItems("English", "Русский");
+        languageSelectBox.setSelected("English");
 
         equalAxisScalesCheckBox.getImage().setScaling(Scaling.fit);
         volumeNondimCheckBox.getImage().setScaling(Scaling.fit);
-
-        alphaField.setMessageText("Enter contact angle");
-        bondTargetField.setMessageText("Enter target Bond number");
-        bondStepField.setMessageText("Enter relaxation Bond number step");
-        relaxationCoefField.setMessageText("Enter minimal relaxation coeficient");
-        epsilonField.setMessageText("Enter accuracy");
-        splitNumField.setMessageText("Enter number of splits");
-        maxIterNumField.setMessageText("Enter maximum number of iterations");
 
         alphaField.setTextFieldFilter(new FloatFieldFilter(false));
         bondTargetField.setTextFieldFilter(new FloatFieldFilter(true));
@@ -96,10 +99,14 @@ public class ProblemSettings extends Table {
         volumeNondimCheckBox.getImageCell().spaceRight(5.0f);
         volumeNondimCheckBox.left();
 
-        defaults().pad(5.0f, 5.0f, 0.0f, 5.0f).expandX().fill();
-        add(equalAxisScalesCheckBox).size(ResourceManager.getCurrentUIFontParam().size, ResourceManager.getCurrentUIFontParam().size)
+        top();
+
+        defaults().pad(5.0f, 5.0f, 0.0f, 5.0f).center().expandX().fill();
+        add(languageLabel).top().row();
+        add(languageSelectBox).padBottom(DEFAULT_PARAMS_OFFSET).top().row();
+        add(equalAxisScalesCheckBox).size(getCurrentUIFontParam().size, getCurrentUIFontParam().size)
                 .left().row();
-        add(volumeNondimCheckBox).size(ResourceManager.getCurrentUIFontParam().size, ResourceManager.getCurrentUIFontParam().size).left().row();
+        add(volumeNondimCheckBox).size(getCurrentUIFontParam().size, getCurrentUIFontParam().size).left().row();
         add(alphaLabel).row();
         add(alphaField).row();
         add(bondTargetLabel).row();
@@ -114,7 +121,22 @@ public class ProblemSettings extends Table {
         add(splitNumField).row();
         add(maxIterNumLabel).row();
         add(maxIterNumField).row();
-        add(generateButton).center().pad(5.0f, 0.0f, 5.0f, 0.0f).width(2.0f * layout.width);
+        add(generateButton).center().pad(5.0f, 0.0f, 5.0f, 0.0f).width(DEFAULT_BUTTON_WIDTH);
+
+        languageSelectBox.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (!event.isHandled()) {
+                    switch (languageSelectBox.getSelected()) {
+                        case "Русский":
+                            setLanguage(UILanguage.Russian);
+                            break;
+                        default:
+                            setLanguage(UILanguage.English);
+                    }
+                }
+            }
+        });
 
         equalAxisScalesCheckBox.addListener(new ChangeListener() {
             @Override
@@ -151,13 +173,13 @@ public class ProblemSettings extends Table {
 
                         presentation.generatePresentation(relaxationParams);
                     } catch (NumberFormatException e) {
-                        errorDialog = ResourceManager.getErrorDialog();
+                        errorDialog = getErrorDialog();
                         getStage().addActor(errorDialog);
-                        errorDialog.setMessage("Incorrect input");
+                        errorDialog.setMessage(ResourceManager.getBundle(currentUILanguage).get("incorrectInputMessage"));
                         errorDialog.toFront();
                         errorDialog.setVisible(true);
                     } catch (Exception e) {
-                        errorDialog = ResourceManager.getErrorDialog();
+                        errorDialog = getErrorDialog();
                         getStage().addActor(errorDialog);
                         errorDialog.setMessage(e.toString());
                         errorDialog.toFront();
@@ -170,8 +192,39 @@ public class ProblemSettings extends Table {
         });
     }
 
+    private void setLanguage(UILanguage language) {
+        if (currentUILanguage != language) {
+            equalAxisScalesCheckBox.setText(ResourceManager.getBundle(language).get("equalAxisScalesCheckBox"));
+            volumeNondimCheckBox.setText(ResourceManager.getBundle(language).get("volumeNondimCheckBox"));
+
+            languageLabel.setText(ResourceManager.getBundle(language).get("languageLabel"));
+            alphaLabel.setText(ResourceManager.getBundle(language).get("alphaLabel"));
+            bondTargetLabel.setText(ResourceManager.getBundle(language).get("bondTargetLabel"));
+            bondStepLabel.setText(ResourceManager.getBundle(language).get("bondStepLabel"));
+            relaxationCoefLabel.setText(ResourceManager.getBundle(language).get("relaxationCoefLabel"));
+            epsilonLabel.setText(ResourceManager.getBundle(language).get("epsilonLabel"));
+            splitNumLabel.setText(ResourceManager.getBundle(language).get("splitNumLabel"));
+            maxIterNumLabel.setText(ResourceManager.getBundle(language).get("maxIterNumLabel"));
+
+            alphaField.setMessageText(ResourceManager.getBundle(language).get("alphaFieldMessage"));
+            bondTargetField.setMessageText(ResourceManager.getBundle(language).get("bondTargetFieldMessage"));
+            bondStepField.setMessageText(ResourceManager.getBundle(language).get("bondStepFieldMessage"));
+            relaxationCoefField.setMessageText(ResourceManager.getBundle(language).get("relaxationCoefFieldMessage"));
+            epsilonField.setMessageText(ResourceManager.getBundle(language).get("epsilonFieldMessage"));
+            splitNumField.setMessageText(ResourceManager.getBundle(language).get("splitNumFieldMessage"));
+            maxIterNumField.setMessageText(ResourceManager.getBundle(language).get("maxIterNumFieldMessage"));
+
+            generateButton.setText(ResourceManager.getBundle(language).get("generateButton"));
+
+            presentation.setLanguage(language);
+
+            currentUILanguage = language;
+        }
+    }
+
     @Override
     public void setSkin(Skin skin) {
+        SelectBoxStyle selectBoxStyle;
         CheckBoxStyle checkBoxStyle;
         LabelStyle labelStyle;
         TextFieldStyle fieldStyle;
@@ -179,13 +232,16 @@ public class ProblemSettings extends Table {
 
         super.setSkin(skin);
 
+        selectBoxStyle = skin.get(SelectBoxStyle.class);
         checkBoxStyle = skin.get(CheckBoxStyle.class);
         labelStyle = skin.get(LabelStyle.class);
         fieldStyle = skin.get(TextFieldStyle.class);
         buttonStyle = skin.get(TextButtonStyle.class);
 
+        languageSelectBox.setStyle(selectBoxStyle);
         equalAxisScalesCheckBox.setStyle(checkBoxStyle);
         volumeNondimCheckBox.setStyle(checkBoxStyle);
+        languageLabel.setStyle(labelStyle);
         alphaLabel.setStyle(labelStyle);
         bondTargetLabel.setStyle(labelStyle);
         bondStepLabel.setStyle(labelStyle);
@@ -205,15 +261,12 @@ public class ProblemSettings extends Table {
         generateButton.setStyle(buttonStyle);
     }
 
-    public void resize() {
-        GlyphLayout layout = new GlyphLayout();
-
-        layout.setText(generateButton.getStyle().font, generateButton.getText());
-
-        getCell(generateButton).width(2.0f * layout.width);
-        getCell(equalAxisScalesCheckBox).width(ResourceManager.getCurrentUIFontParam().size).height(ResourceManager.getCurrentUIFontParam().size);
-        getCell(volumeNondimCheckBox).width(ResourceManager.getCurrentUIFontParam().size).height(ResourceManager.getCurrentUIFontParam().size);
-        equalAxisScalesCheckBox.getImageCell().size(ResourceManager.getCurrentUIFontParam().size, ResourceManager.getCurrentUIFontParam().size);
-        volumeNondimCheckBox.getImageCell().size(ResourceManager.getCurrentUIFontParam().size).height(ResourceManager.getCurrentUIFontParam().size);
+    public void resize(float widthMul, float heightMul) {
+        getCell(languageSelectBox).padBottom(heightMul * DEFAULT_PARAMS_OFFSET);
+        getCell(generateButton).width(widthMul * DEFAULT_BUTTON_WIDTH);
+        getCell(equalAxisScalesCheckBox).width(getCurrentUIFontParam().size).height(getCurrentUIFontParam().size);
+        getCell(volumeNondimCheckBox).width(getCurrentUIFontParam().size).height(getCurrentUIFontParam().size);
+        equalAxisScalesCheckBox.getImageCell().size(getCurrentUIFontParam().size, getCurrentUIFontParam().size);
+        volumeNondimCheckBox.getImageCell().size(getCurrentUIFontParam().size).height(getCurrentUIFontParam().size);
     }
 }
