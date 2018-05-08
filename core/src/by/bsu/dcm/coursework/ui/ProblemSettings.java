@@ -164,7 +164,7 @@ public class ProblemSettings extends Table {
 
                 if (!generateButton.isDisabled()) {
                     try {
-                        relaxationParams.alpha = Double.valueOf(alphaField.getText());
+                        relaxationParams.alpha = Math.PI * Double.valueOf(alphaField.getText()) / 180.0;
                         relaxationParams.targetBond = Double.valueOf(bondTargetField.getText());
                         relaxationParams.bondStep = Double.valueOf(bondStepField.getText());
                         relaxationParams.relaxationCoefMin = Double.valueOf(relaxationCoefField.getText());
