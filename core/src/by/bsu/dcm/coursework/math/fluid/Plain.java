@@ -26,11 +26,11 @@ public class Plain extends EquilibriumFluid {
 
         integral = calcIntegralTrapeze(prevApprox, step);
 
-        coefsMtr[0][0] = -(1.0 - (params.bond * step * step) / (2.0 * integral));
+        coefsMtr[0][0] = -1.0;
         coefsMtr[0][1] = 1.0;
         coefsMtr[params.splitNum][params.splitNum] = 1.0;
 
-        rightVect[0] = (step * step / 2.0) * (-params.bond / 2.0 - Math.sin(params.alpha));
+        rightVect[0] = (step * step / 2.0) * (params.bond / 2.0 + Math.sin(params.alpha));
         rightVect[params.splitNum] = 0.0;
 
         for (int i = 1; i < params.splitNum; i++) {
