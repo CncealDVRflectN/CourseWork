@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static by.bsu.dcm.coursework.ResourceManager.*;
+import static by.bsu.dcm.coursework.graphs.Graph.DescriptionAlign;
 
 public class PresentationWidget extends Widget implements Disposable {
     public enum Slide {
@@ -75,12 +76,14 @@ public class PresentationWidget extends Widget implements Disposable {
 
         graphPointSize = 2.5f;
         graphLineWidth = 2.0f;
-        graphsNum = 5;
+        graphsNum = 3;
         equalAxisScaleMarks = false;
         volumeNondim = false;
 
         generateGraphsParams();
         setCurrentSlide(Slide.HeightCoef);
+
+        graph.setDescriptionAlign(DescriptionAlign.TopRight);
     }
 
     public void generatePresentation(RelaxationParams params) {
@@ -295,8 +298,7 @@ public class PresentationWidget extends Widget implements Disposable {
 
                 for (int i = 0; i < result.length; i++) {
                     fluidGraphParams[i].points = result[i].points;
-                    fluidGraphParams[i].desription = String.format(Locale.ENGLISH, "%s = %f",
-                            ResourceManager.getBundle(currentUILanguage).get("bondGraphDescription"), result[i].bond);
+                    fluidGraphParams[i].desription = String.format(Locale.ENGLISH, "Bo = %f", result[i].bond);
                 }
 
                 Gdx.app.postRunnable(new DrawRunnable(problemName, xAxisName, yAxisName, graphHolder, fluidGraphParams, equalAxisScaleMarks));
