@@ -17,7 +17,9 @@ public abstract class EquilibriumFluid {
     protected double[] prevApprox;
     protected double step;
 
-    protected double[][] coefsMtr;
+    protected double[] coefsLowerDiagonal;
+    protected double[] coefsMainDiagonal;
+    protected double[] coefsUpperDiagonal;
     protected double[] rightVect;
 
     protected int iterationsCounter;
@@ -61,7 +63,9 @@ public abstract class EquilibriumFluid {
 
             nextApprox = new double[params.splitNum + 1];
             prevApprox = new double[params.splitNum + 1];
-            coefsMtr = new double[params.splitNum + 1][params.splitNum + 1];
+            coefsLowerDiagonal = new double[params.splitNum];
+            coefsMainDiagonal = new double[params.splitNum + 1];
+            coefsUpperDiagonal = new double[params.splitNum];
             rightVect = new double[params.splitNum + 1];
         }
 

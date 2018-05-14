@@ -35,32 +35,25 @@ public class Axisymmetric extends EquilibriumFluid {
 
         calcCoefs(step);
 
-        for (int i = 0; i < coefsMtr.length; i++) {
-            for (int j = 0; j < coefsMtr[i].length; j++) {
-                coefsMtr[i][i] = 0.0;
-            }
-            rightVect[i] = 0.0;
-        }
-
         integralCbrt = Math.cbrt(calcIntegralTrapeze(prevApprox, nodes, step));
         q = -2.0 * Math.sin(params.alpha) - params.bond * integralCbrt / Math.PI;
 
-        coefsMtr[0][0] = -(1.0 / step + (step / 4.0) * (params.bond / Math.pow(integralCbrt, 2.0)));
-        coefsMtr[0][1] = 1.0 / step;
-        coefsMtr[params.splitNum][params.splitNum] = 1.0;
+        coefsMainDiagonal[0] = -(1.0 / step + (step / 4.0) * (params.bond / Math.pow(integralCbrt, 2.0)));
+        coefsUpperDiagonal[0] = 1.0 / step;
+        coefsMainDiagonal[params.splitNum] = 1.0;
 
         rightVect[0] = step * q / 4.0;
         rightVect[params.splitNum] = 0.0;
 
         for (int i = 1; i < params.splitNum; i++) {
-            coefsMtr[i][i - 1] = coefs[i];
-            coefsMtr[i][i] = -(coefs[i] + coefs[i + 1]);
-            coefsMtr[i][i + 1] = coefs[i + 1];
+            coefsLowerDiagonal[i - 1] = coefs[i];
+            coefsMainDiagonal[i] = -(coefs[i] + coefs[i + 1]);
+            coefsUpperDiagonal[i] = coefs[i + 1];
 
             rightVect[i] = nodes[i] * step * step * (params.bond * prevApprox[i] / Math.pow(integralCbrt, 2.0) + q);
         }
 
-        rightSweep.calcRightSweep(coefsMtr, rightVect, nextApprox);
+        rightSweep.calcRightSweep(coefsLowerDiagonal, coefsMainDiagonal, coefsUpperDiagonal, rightVect, nextApprox);
     }
 
     @Override
