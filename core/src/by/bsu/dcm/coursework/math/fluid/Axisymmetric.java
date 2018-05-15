@@ -14,7 +14,7 @@ public class Axisymmetric extends EquilibriumFluid {
     }
 
     private double calcIntegralTrapeze(double[] values, double[] nodes, double step) {
-        double result = 0.0;
+        double result = values[0] / 2.0;
         double length = values.length - 1;
 
         for (int i = 1; i < length; i++) {

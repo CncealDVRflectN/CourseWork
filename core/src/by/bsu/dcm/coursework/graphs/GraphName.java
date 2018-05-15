@@ -32,10 +32,10 @@ class GraphName implements Disposable {
 
     GraphName() {
         fontParam = new FreeTypeFontParameter();
-        fontParam.size = 15;
+        fontParam.size = 18;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         fontParam.characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRST\n" +
-                "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя";
+                "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
         font = ResourceManager.getFont(fontParam);
 
         backgroundColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);

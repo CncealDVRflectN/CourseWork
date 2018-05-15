@@ -43,10 +43,10 @@ class GraphAxis implements Disposable {
         axisColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         axisLineWidth = 1.0f;
 
-        fontParam.size = 12;
+        fontParam.size = 16;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         fontParam.characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRST\n" +
-                "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя";
+                "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
         font = ResourceManager.getFont(fontParam);
 
         scaleMarkLineTopLength = 4.0f;
