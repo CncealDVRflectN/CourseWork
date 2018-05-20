@@ -92,7 +92,7 @@ public class PresentationWidget extends Widget implements Disposable {
         EquilibriumRunnable axisymmetric = new EquilibriumRunnable();
         EquilibriumRunnable plain = new EquilibriumRunnable();
         HeightCoefRunnable heightCoefs = new HeightCoefRunnable();
-        CyclicBarrier fluidsBarrier = new CyclicBarrier(1, heightCoefs);
+        CyclicBarrier fluidsBarrier = new CyclicBarrier(2, heightCoefs);
 
         heightCoefsGraphParams.clear();
         generateButton.setDisabled(true);
