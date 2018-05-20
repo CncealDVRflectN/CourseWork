@@ -28,9 +28,9 @@ public class ProblemPresentation extends Table implements Disposable {
     public ProblemPresentation(Skin skin) {
         presentation = new PresentationWidget();
 
-        axisymmetricButton = new TextButton("Axisymmetric", skin.get("presentation-default", TextButtonStyle.class));
-        plainButton = new TextButton("Plain", skin.get("presentation-default", TextButtonStyle.class));
-        heightCoefButton = new TextButton("Height coeficients", skin.get("presentation-default", TextButtonStyle.class));
+        axisymmetricButton = new TextButton("", skin.get("presentation-default", TextButtonStyle.class));
+        plainButton = new TextButton("", skin.get("presentation-default", TextButtonStyle.class));
+        heightCoefButton = new TextButton("", skin.get("presentation-default", TextButtonStyle.class));
 
         setBackground(skin.getDrawable("presentation-background"));
 
@@ -99,7 +99,7 @@ public class ProblemPresentation extends Table implements Disposable {
         if (currentUILanguage != language) {
             axisymmetricButton.setText(ResourceManager.getBundle(language).get("axisymmetric"));
             plainButton.setText(ResourceManager.getBundle(language).get("plain"));
-            heightCoefButton.setText(ResourceManager.getBundle(language).get("heightCoefButton"));
+            heightCoefButton.setText(ResourceManager.getBundle(language).get("compressionRatiosButton"));
 
             presentation.setLanguage(language);
 

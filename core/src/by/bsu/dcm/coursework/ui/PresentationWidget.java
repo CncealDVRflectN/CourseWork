@@ -92,7 +92,7 @@ public class PresentationWidget extends Widget implements Disposable {
         EquilibriumRunnable axisymmetric = new EquilibriumRunnable();
         EquilibriumRunnable plain = new EquilibriumRunnable();
         HeightCoefRunnable heightCoefs = new HeightCoefRunnable();
-        CyclicBarrier fluidsBarrier = new CyclicBarrier(2, heightCoefs);
+        CyclicBarrier fluidsBarrier = new CyclicBarrier(1, heightCoefs);
 
         heightCoefsGraphParams.clear();
         generateButton.setDisabled(true);
@@ -101,7 +101,7 @@ public class PresentationWidget extends Widget implements Disposable {
         params.volumeNondim = volumeNondim;
 
         heightCoefs.setGraphHolder(heightCoefGraph);
-        heightCoefs.setName(ResourceManager.getBundle(currentUILanguage).get("heightCoefsGraphName"));
+        heightCoefs.setName(ResourceManager.getBundle(currentUILanguage).get("compressionRatiosGraphName"));
         heightCoefs.setCoefsGraphParamsList(heightCoefsGraphParams);
 
         axisymmetric.setFluid(axisymmetricFluid);
