@@ -39,6 +39,16 @@ public class Plain extends EquilibriumFluid {
     }
 
     @Override
+    protected void calcInitialApproximation(ProblemParams params) {
+        double sin = Math.sin(params.alpha);
+        double ctg = 1.0 / Math.tan(params.alpha);
+
+        for (int i = 0; i < nodes.length; i++) {
+            nextApprox[i] = Math.sqrt(1.0 - Math.pow(nodes[i] * sin, 2.0)) / sin - ctg;
+        }
+    }
+
+    @Override
     protected double calcVolumeNondimMul(double[] func) {
         return 1.0 / Math.sqrt(calcIntegralTrapeze(func, step));
     }

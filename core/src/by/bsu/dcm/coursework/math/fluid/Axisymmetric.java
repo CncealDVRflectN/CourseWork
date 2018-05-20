@@ -14,7 +14,7 @@ public class Axisymmetric extends EquilibriumFluid {
     }
 
     private double calcIntegralTrapeze(double[] values, double[] nodes, double step) {
-        double result = values[0] / 2.0;
+        double result = values[0] * nodes[0] / 2.0;
         double length = values.length - 1;
 
         for (int i = 1; i < length; i++) {
@@ -54,6 +54,16 @@ public class Axisymmetric extends EquilibriumFluid {
         }
 
         rightSweep.calcRightSweep(coefsLowerDiagonal, coefsMainDiagonal, coefsUpperDiagonal, rightVect, nextApprox);
+    }
+
+    @Override
+    protected void calcInitialApproximation(ProblemParams params) {
+        double sin = Math.sin(params.alpha);
+        double ctg = 1.0 / Math.tan(params.alpha);
+
+        for (int i = 0; i < nodes.length; i++) {
+            nextApprox[i] = Math.sqrt(1.0 - Math.pow(nodes[i] * sin, 2.0)) / sin - ctg;
+        }
     }
 
     @Override

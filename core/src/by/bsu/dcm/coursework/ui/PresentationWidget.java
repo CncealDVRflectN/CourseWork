@@ -310,7 +310,7 @@ public class PresentationWidget extends Widget implements Disposable {
                 heightGraphParam.points = listToArray(heightCoefsPoints);
                 heightCoefRunnable.addCoefGraph(heightGraphParam);
 
-                fluidsBarrier.await(5000, TimeUnit.MILLISECONDS);
+                fluidsBarrier.await(60000, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);

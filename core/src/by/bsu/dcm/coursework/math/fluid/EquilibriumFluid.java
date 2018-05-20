@@ -34,11 +34,7 @@ public abstract class EquilibriumFluid {
 
     protected abstract void calcNextApproximation(ProblemParams params);
 
-    protected void calcInitialApproximation() {
-        for (int i = 0; i < nodes.length; i++) {
-            nextApprox[i] = Math.sqrt(1.0 - Math.pow(nodes[i], 2.0));
-        }
-    }
+    protected abstract void calcInitialApproximation(ProblemParams params);
 
     private boolean isCorrect(double[] result) {
         for (double point : result) {
@@ -51,7 +47,7 @@ public abstract class EquilibriumFluid {
 
     protected void calcFunctionValues(ProblemParams params) throws IterationsLimitException, IncorrectResultException {
         double[] tmp;
-        double curEpsilon = params.epsilon / params.relaxationCoef;
+        double curEpsilon = params.epsilon * params.relaxationCoef;
 
         if (nodes == null || nodes.length != params.splitNum + 1) {
             step = 1.0 / params.splitNum;
@@ -71,7 +67,7 @@ public abstract class EquilibriumFluid {
 
         if (lastParams.splitNum != params.splitNum || lastParams.bond > params.bond || lastParams.alpha != params.alpha ||
                 lastParams.epsilon != params.epsilon) {
-            calcInitialApproximation();
+            calcInitialApproximation(params);
             lastCorrectResult = new double[params.splitNum + 1];
         } else {
             System.arraycopy(lastCorrectResult, 0, nextApprox, 0, lastCorrectResult.length);
