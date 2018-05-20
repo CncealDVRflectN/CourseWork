@@ -88,7 +88,7 @@ public final class ResourceManager {
 
             copyFontParams(fontParameter);
             currentUIFontParam.characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRST\n" +
-                    "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя";
+                    "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
 
             skinUI.add("font", getFont(currentUIFontParam), BitmapFont.class);
             skinUI.addRegions(new TextureAtlas(Gdx.files.internal("uiskin/uiskin.atlas")));

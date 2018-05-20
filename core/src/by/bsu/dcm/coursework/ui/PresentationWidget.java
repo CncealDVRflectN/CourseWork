@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static by.bsu.dcm.coursework.ResourceManager.*;
+import static by.bsu.dcm.coursework.graphs.Graph.DescriptionAlign;
 
 public class PresentationWidget extends Widget implements Disposable {
     public enum Slide {
@@ -50,6 +51,7 @@ public class PresentationWidget extends Widget implements Disposable {
     private GraphHolder plainGraph;
     private GraphHolder heightCoefGraph;
 
+    private List<GraphPoints> heightCoefsGraphParams;
     private GraphPoints[] axisymmetricGraphParams;
     private GraphPoints[] plainGraphParams;
     private GraphPoints axisymCoefGraphParams;
@@ -69,18 +71,21 @@ public class PresentationWidget extends Widget implements Disposable {
         axisymmetricFluid = new Axisymmetric();
         plainFluid = new Plain();
 
+        heightCoefsGraphParams = new LinkedList<>();
         axisymmetricGraph = new GraphHolder();
         plainGraph = new GraphHolder();
         heightCoefGraph = new GraphHolder();
 
         graphPointSize = 2.5f;
         graphLineWidth = 2.0f;
-        graphsNum = 5;
+        graphsNum = 3;
         equalAxisScaleMarks = false;
         volumeNondim = false;
 
         generateGraphsParams();
         setCurrentSlide(Slide.HeightCoef);
+
+        graph.setDescriptionAlign(DescriptionAlign.TopRight);
     }
 
     public void generatePresentation(RelaxationParams params) {
@@ -89,6 +94,7 @@ public class PresentationWidget extends Widget implements Disposable {
         HeightCoefRunnable heightCoefs = new HeightCoefRunnable();
         CyclicBarrier fluidsBarrier = new CyclicBarrier(2, heightCoefs);
 
+        heightCoefsGraphParams.clear();
         generateButton.setDisabled(true);
 
         params.resultsNum = graphsNum;
@@ -96,6 +102,7 @@ public class PresentationWidget extends Widget implements Disposable {
 
         heightCoefs.setGraphHolder(heightCoefGraph);
         heightCoefs.setName(ResourceManager.getBundle(currentUILanguage).get("heightCoefsGraphName"));
+        heightCoefs.setCoefsGraphParamsList(heightCoefsGraphParams);
 
         axisymmetric.setFluid(axisymmetricFluid);
         axisymmetric.setFluidGraphParams(axisymmetricGraphParams);
@@ -295,8 +302,7 @@ public class PresentationWidget extends Widget implements Disposable {
 
                 for (int i = 0; i < result.length; i++) {
                     fluidGraphParams[i].points = result[i].points;
-                    fluidGraphParams[i].desription = String.format(Locale.ENGLISH, "%s = %f",
-                            ResourceManager.getBundle(currentUILanguage).get("bondGraphDescription"), result[i].bond);
+                    fluidGraphParams[i].desription = String.format(Locale.ENGLISH, "Bo = %f", result[i].bond);
                 }
 
                 Gdx.app.postRunnable(new DrawRunnable(problemName, xAxisName, yAxisName, graphHolder, fluidGraphParams, equalAxisScaleMarks));
@@ -304,7 +310,7 @@ public class PresentationWidget extends Widget implements Disposable {
                 heightGraphParam.points = listToArray(heightCoefsPoints);
                 heightCoefRunnable.addCoefGraph(heightGraphParam);
 
-                fluidsBarrier.await(5000, TimeUnit.MILLISECONDS);
+                fluidsBarrier.await(60000, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);
@@ -370,22 +376,21 @@ public class PresentationWidget extends Widget implements Disposable {
 
     private class HeightCoefRunnable implements Runnable {
         private String name;
-        private List<GraphPoints> coefGraphs;
+        private List<GraphPoints> coefGraphsParams;
         private ReentrantLock listLock;
         private GraphHolder graphHolder;
 
         HeightCoefRunnable() {
-            coefGraphs = new LinkedList<>();
             listLock = new ReentrantLock();
         }
 
         @Override
         public void run() {
-            GraphPoints[] graphs = new GraphPoints[coefGraphs.size()];
+            GraphPoints[] graphs = new GraphPoints[coefGraphsParams.size()];
 
             try {
                 Gdx.app.postRunnable(new DrawRunnable(name, HEIGHT_COEF_X_AXIS_NAME, HEIGHT_COEF_Y_AXIS_NAME,
-                        graphHolder, coefGraphs.toArray(graphs), false));
+                        graphHolder, coefGraphsParams.toArray(graphs), false));
             } catch (Exception e) {
                 ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);
@@ -405,10 +410,14 @@ public class PresentationWidget extends Widget implements Disposable {
             this.name = name;
         }
 
+        public void setCoefsGraphParamsList(List<GraphPoints> graphParams) {
+            coefGraphsParams = graphParams;
+        }
+
         public void addCoefGraph(GraphPoints graphParams) {
             try {
                 listLock.lock();
-                coefGraphs.add(graphParams);
+                coefGraphsParams.add(graphParams);
             } finally {
                 listLock.unlock();
             }
@@ -452,6 +461,8 @@ public class PresentationWidget extends Widget implements Disposable {
                 }
 
                 graphHolder.setGraph(graph.getGraph(Math.round(PresentationWidget.this.getWidth()), Math.round(PresentationWidget.this.getHeight())));
+
+                graph.clear();
             } catch (Exception e) {
                 ErrorDialog errorDialog = getErrorDialog();
                 getStage().addActor(errorDialog);

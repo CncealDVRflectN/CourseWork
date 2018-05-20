@@ -4,17 +4,17 @@ public class RightSweep {
     private double[] alpha;
     private double[] beta;
 
-    private void calcAlpha(double[][] mtr) {
-        alpha[0] = -mtr[0][1] / mtr[0][0];
+    private void calcAlpha(double[] lowerDiagonal, double[] mainDiagonal, double[] upperDiagonal) {
+        alpha[0] = -upperDiagonal[0] / mainDiagonal[0];
         for (int i = 1; i < alpha.length; i++) {
-            alpha[i] = -mtr[i][i + 1] / (mtr[i][i] + mtr[i][i - 1] * alpha[i - 1]);
+            alpha[i] = -upperDiagonal[i] / (mainDiagonal[i] + lowerDiagonal[i - 1] * alpha[i - 1]);
         }
     }
 
-    private void calcBeta(double[][] mtr, double[] vect) {
-        beta[0] = vect[0] / mtr[0][0];
+    private void calcBeta(double[] lowerDiagonal, double[] mainDiagonal, double[] vect) {
+        beta[0] = vect[0] / mainDiagonal[0];
         for (int i = 1; i < beta.length; i++) {
-            beta[i] = (vect[i] - mtr[i][i - 1] * beta[i - 1]) / (mtr[i][i] + mtr[i][i - 1] * alpha[i - 1]);
+            beta[i] = (vect[i] - lowerDiagonal[i - 1] * beta[i - 1]) / (mainDiagonal[i] + lowerDiagonal[i - 1] * alpha[i - 1]);
         }
     }
 
@@ -27,38 +27,38 @@ public class RightSweep {
         return solutionDest;
     }
 
-    private boolean isCorrect(double[][] mtr) {
-        for (int i = 0; i < mtr.length; i++) {
-            if (mtr.length != mtr[i].length) {
+    private boolean isCorrect(double[] lowerDiagonal, double[] mainDiagonal, double[] upperDiagonal) {
+        for (int i = 0; i < mainDiagonal.length; i++) {
+            if (lowerDiagonal.length != mainDiagonal.length - 1 || upperDiagonal.length != mainDiagonal.length - 1) {
                 return false;
             }
         }
-        if (Math.abs(mtr[0][0]) < Math.abs(mtr[0][1])) {
+        if (Math.abs(mainDiagonal[0]) < Math.abs(upperDiagonal[0])) {
             return false;
         }
-        if (Math.abs(mtr[mtr.length - 1][mtr.length - 1]) < Math.abs(mtr[mtr.length - 1][mtr.length - 2])) {
+        if (Math.abs(mainDiagonal[mainDiagonal.length - 1]) < Math.abs(lowerDiagonal[lowerDiagonal.length - 1])) {
             return false;
         }
-        for (int i = 1; i < mtr.length - 1; i++) {
-            if (Math.abs(mtr[i][i]) < (Math.abs(mtr[i][i - 1]) + Math.abs(mtr[i][i + 1]))) {
+        for (int i = 1; i < upperDiagonal.length; i++) {
+            if (Math.abs(mainDiagonal[i]) < (Math.abs(lowerDiagonal[i - 1]) + Math.abs(upperDiagonal[i]))) {
                 return false;
             }
         }
         return true;
     }
 
-    public double[] calcRightSweep(double[][] mtr, double[] vect, double[] solutionDest) {
-        if (!isCorrect(mtr)) {
+    public double[] calcRightSweep(double[] lowerDiagonal, double[] mainDiagonal, double[] upperDiagonal, double[] vect, double[] solutionDest) {
+        if (!isCorrect(lowerDiagonal, mainDiagonal, upperDiagonal)) {
             System.out.println("Warning: right sweep matrix incorrect!");
         }
 
-        if (beta == null || beta.length != mtr.length) {
-            alpha = new double[mtr.length - 1];
-            beta = new double[mtr.length];
+        if (beta == null || beta.length != mainDiagonal.length) {
+            alpha = new double[mainDiagonal.length - 1];
+            beta = new double[mainDiagonal.length];
         }
 
-        calcAlpha(mtr);
-        calcBeta(mtr, vect);
+        calcAlpha(lowerDiagonal, mainDiagonal, upperDiagonal);
+        calcBeta(lowerDiagonal, mainDiagonal, vect);
 
         return calcSolution(alpha, beta, solutionDest);
     }

@@ -17,32 +17,35 @@ public class Plain extends EquilibriumFluid {
         double coef = 8.0 * step;
         double integral;
 
-        for (int i = 0; i < coefsMtr.length; i++) {
-            for (int j = 0; j < coefsMtr[i].length; j++) {
-                coefsMtr[i][i] = 0.0;
-            }
-            rightVect[i] = 0.0;
-        }
-
         integral = calcIntegralTrapeze(prevApprox, step);
 
-        coefsMtr[0][0] = -1.0;
-        coefsMtr[0][1] = 1.0;
-        coefsMtr[params.splitNum][params.splitNum] = 1.0;
+        coefsMainDiagonal[0] = -1.0 - step * step * params.bond / (2.0 * integral);
+        coefsUpperDiagonal[0] = 1.0;
+        coefsMainDiagonal[params.splitNum] = 1.0;
 
-        rightVect[0] = (step * step / 2.0) * (params.bond / 2.0 + Math.sin(params.alpha));
+        rightVect[0] = -(step * step / 2.0) * (params.bond / 2.0 + Math.sin(params.alpha));
         rightVect[params.splitNum] = 0.0;
 
         for (int i = 1; i < params.splitNum; i++) {
-            coefsMtr[i][i - 1] = coef;
-            coefsMtr[i][i] = -2.0 * coef;
-            coefsMtr[i][i + 1] = coef;
+            coefsLowerDiagonal[i - 1] = coef;
+            coefsMainDiagonal[i] = -2.0 * coef;
+            coefsUpperDiagonal[i] = coef;
 
             rightVect[i] = Math.pow(4.0 * step * step + Math.pow(prevApprox[i + 1] - prevApprox[i - 1], 2.0), 3.0 / 2.0) *
                     (params.bond * prevApprox[i] / integral - params.bond / 2.0 - Math.sin(params.alpha));
         }
 
-        rightSweep.calcRightSweep(coefsMtr, rightVect, nextApprox);
+        rightSweep.calcRightSweep(coefsLowerDiagonal, coefsMainDiagonal, coefsUpperDiagonal, rightVect, nextApprox);
+    }
+
+    @Override
+    protected void calcInitialApproximation(ProblemParams params) {
+        double sin = Math.sin(params.alpha);
+        double ctg = 1.0 / Math.tan(params.alpha);
+
+        for (int i = 0; i < nodes.length; i++) {
+            nextApprox[i] = Math.sqrt(1.0 - Math.pow(nodes[i] * sin, 2.0)) / sin - ctg;
+        }
     }
 
     @Override
