@@ -3,7 +3,7 @@ package by.bsu.dcm.coursework.graphs;
 import by.bsu.dcm.coursework.ResourceManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -43,7 +43,7 @@ class GraphAxis implements Disposable {
         axisColor = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         axisLineWidth = 1.0f;
 
-        fontParam.size = 16;
+        fontParam.size = 14;
         fontParam.color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
         fontParam.characters = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRST\n" +
                 "UVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
@@ -66,7 +66,7 @@ class GraphAxis implements Disposable {
     private void drawAxis(ShapeRenderer renderer, Vector2 centerAxisNorm, float[] scalesXNorm, float[] scalesYNorm, int width, int height) {
         float scaleLineOffset = axisLineWidth / 2.0f;
 
-        Gdx.gl30.glLineWidth(axisLineWidth);
+        Gdx.gl20.glLineWidth(axisLineWidth);
 
         renderer.begin(ShapeRenderer.ShapeType.Line);
         renderer.setColor(axisColor);
@@ -87,7 +87,7 @@ class GraphAxis implements Disposable {
 
         renderer.end();
 
-        Gdx.gl30.glLineWidth(1.0f);
+        Gdx.gl20.glLineWidth(1.0f);
     }
 
     private String calcScaleMarkFormat(int stepPow) {
@@ -183,13 +183,13 @@ class GraphAxis implements Disposable {
 
     public void draw(Batch batch, ShapeRenderer renderer, Vector2 centerAxis, Vector2 centerAxisNorm, float[] scalesX, float[] scalesY,
                      float[] scalesXNorm, float[] scalesYNorm, int scalesXPow, int scalesYPow, int width, int height) {
-        Gdx.gl30.glEnable(GL30.GL_BLEND);
-        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl20.glEnable(GL20.GL_BLEND);
+        Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         drawAxis(renderer, centerAxisNorm, scalesXNorm, scalesYNorm, width, height);
         drawScaleMarks(batch, centerAxis, centerAxisNorm, scalesX, scalesY, scalesXNorm, scalesYNorm, scalesXPow, scalesYPow, width, height);
 
-        Gdx.gl30.glDisable(GL30.GL_BLEND);
+        Gdx.gl20.glDisable(GL20.GL_BLEND);
     }
 
     public void setAxisColor(Color color) {

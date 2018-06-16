@@ -2,7 +2,7 @@ package by.bsu.dcm.coursework.graphs;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 class GraphBackground {
@@ -25,11 +25,11 @@ class GraphBackground {
     public void draw(ShapeRenderer renderer, float[] scalesXNorm, float[] scalesYNorm, int width, int height) {
         float tmp;
 
-        Gdx.gl30.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
-        Gdx.gl30.glEnable(GL30.GL_BLEND);
-        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-        Gdx.gl30.glLineWidth(markupLineWidth);
+        Gdx.gl20.glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl20.glEnable(GL20.GL_BLEND);
+        Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl20.glLineWidth(markupLineWidth);
 
         renderer.begin(ShapeRenderer.ShapeType.Line);
         renderer.setColor(markupColor);
@@ -46,8 +46,8 @@ class GraphBackground {
 
         renderer.end();
 
-        Gdx.gl30.glLineWidth(1.0f);
-        Gdx.gl30.glDisable(GL30.GL_BLEND);
+        Gdx.gl20.glLineWidth(1.0f);
+        Gdx.gl20.glDisable(GL20.GL_BLEND);
     }
 
     public void setBackgroundColor(Color color) {

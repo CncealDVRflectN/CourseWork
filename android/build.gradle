@@ -1,6 +1,6 @@
 android {
     buildToolsVersion "27.0.1"
-    compileSdkVersion 26
+    compileSdkVersion 22
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -19,8 +19,8 @@ android {
     }
     defaultConfig {
         applicationId "by.bsu.dcm.coursework"
-        minSdkVersion 24
-        targetSdkVersion 26
+        minSdkVersion 22
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
@@ -93,8 +93,8 @@ eclipse {
     }
 
     jdt {
-        sourceCompatibility = 1.6
-        targetCompatibility = 1.6
+        sourceCompatibility = 1.7
+        targetCompatibility = 1.7
     }
 
     classpath {

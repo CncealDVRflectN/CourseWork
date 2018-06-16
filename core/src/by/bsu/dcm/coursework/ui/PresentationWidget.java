@@ -101,7 +101,7 @@ public class PresentationWidget extends Widget implements Disposable {
         params.volumeNondim = volumeNondim;
 
         heightCoefs.setGraphHolder(heightCoefGraph);
-        heightCoefs.setName(ResourceManager.getBundle(currentUILanguage).get("heightCoefsGraphName"));
+        heightCoefs.setName(ResourceManager.getBundle(currentUILanguage).get("compressionRatiosGraphName"));
         heightCoefs.setCoefsGraphParamsList(heightCoefsGraphParams);
 
         axisymmetric.setFluid(axisymmetricFluid);
