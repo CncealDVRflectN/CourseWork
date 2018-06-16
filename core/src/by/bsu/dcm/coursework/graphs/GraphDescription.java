@@ -3,7 +3,7 @@ package by.bsu.dcm.coursework.graphs;
 import by.bsu.dcm.coursework.ResourceManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -87,7 +87,7 @@ class GraphDescription implements Disposable {
         Vector2 topRight = new Vector2(bottomLeft.x + rectSize.x, bottomLeft.y + rectSize.y);
         float linePadding = borderLineWidth / 2.0f;
 
-        Gdx.gl30.glLineWidth(borderLineWidth);
+        Gdx.gl20.glLineWidth(borderLineWidth);
 
         renderer.begin(ShapeType.Line);
         renderer.setColor(borderLineColor);
@@ -103,7 +103,7 @@ class GraphDescription implements Disposable {
 
         renderer.end();
 
-        Gdx.gl30.glLineWidth(1.0f);
+        Gdx.gl20.glLineWidth(1.0f);
     }
 
     public void draw(Batch batch, ShapeRenderer renderer, DescriptionAlign align, List<GraphPoints> graphs, int width, int height) {
@@ -139,14 +139,14 @@ class GraphDescription implements Disposable {
                 bottomLeft.set(borderLineWidth, borderLineWidth);
         }
 
-        Gdx.gl30.glEnable(GL30.GL_BLEND);
-        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl20.glEnable(GL20.GL_BLEND);
+        Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         drawBackground(renderer, graphs, bottomLeft, rectSize, lineHeight);
         drawText(batch, graphs, bottomLeft, lineHeight);
         drawBorder(renderer, bottomLeft, rectSize);
 
-        Gdx.gl30.glDisable(GL30.GL_BLEND);
+        Gdx.gl20.glDisable(GL20.GL_BLEND);
     }
 
     private boolean isEmpty(List<GraphPoints> graphs) {

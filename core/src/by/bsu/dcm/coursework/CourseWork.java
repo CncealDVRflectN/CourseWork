@@ -3,7 +3,7 @@ package by.bsu.dcm.coursework;
 import by.bsu.dcm.coursework.ui.ProblemUI;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -23,8 +23,8 @@ public class CourseWork extends ApplicationAdapter {
 
     @Override
     public void render() {
-        Gdx.gl30.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        Gdx.gl30.glClear(GL30.GL_COLOR_BUFFER_BIT);
+        Gdx.gl20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();

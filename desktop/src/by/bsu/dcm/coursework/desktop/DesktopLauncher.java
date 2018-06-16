@@ -1,21 +1,22 @@
 package by.bsu.dcm.coursework.desktop;
 
+import by.bsu.dcm.coursework.CourseWork;
+import com.badlogic.gdx.Files;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import by.bsu.dcm.coursework.CourseWork;
 
 public class DesktopLauncher {
-	public static void main (String[] arg) {
-		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
+    public static void main(String... args) {
+        LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 
-		config.title = "Corse Work";
+		config.title = "Course Work";
 		config.width = 1280;
 		config.height = 720;
 		config.backgroundFPS = 30;
 		config.foregroundFPS = 60;
 		config.vSyncEnabled = false;
-		config.useGL30 = true;
+		config.addIcon("icons/ic_launcher.png", Files.FileType.Internal);
 
-		new LwjglApplication(new CourseWork(), config);
-	}
+        new LwjglApplication(new CourseWork(), config);
+    }
 }

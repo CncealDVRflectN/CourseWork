@@ -4,7 +4,7 @@ import by.bsu.dcm.coursework.ResourceManager;
 import by.bsu.dcm.coursework.graphs.Graph.NameAlign;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -75,8 +75,8 @@ class GraphName implements Disposable {
         }
         topRight.set(bottomLeft.x + rectSize.x, bottomLeft.y + rectSize.y);
 
-        Gdx.gl30.glEnable(GL30.GL_BLEND);
-        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl20.glEnable(GL20.GL_BLEND);
+        Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
         renderer.begin(ShapeType.Filled);
         renderer.setColor(backgroundColor);
@@ -91,7 +91,7 @@ class GraphName implements Disposable {
 
         batch.end();
 
-        Gdx.gl30.glLineWidth(borderLineWidth);
+        Gdx.gl20.glLineWidth(borderLineWidth);
 
         renderer.begin(ShapeType.Line);
         renderer.setColor(borderLineColor);
@@ -107,8 +107,8 @@ class GraphName implements Disposable {
 
         renderer.end();
 
-        Gdx.gl30.glLineWidth(1.0f);
-        Gdx.gl30.glDisable(GL30.GL_BLEND);
+        Gdx.gl20.glLineWidth(1.0f);
+        Gdx.gl20.glDisable(GL20.GL_BLEND);
     }
 
     private boolean isEmpty() {

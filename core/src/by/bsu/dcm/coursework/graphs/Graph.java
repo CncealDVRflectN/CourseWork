@@ -4,7 +4,7 @@ import by.bsu.dcm.coursework.math.Util;
 import by.bsu.dcm.coursework.util.Pair;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL30;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -193,6 +193,7 @@ public class Graph implements Disposable {
     }
 
     private void normalize() {
+        GraphPoints graphNorm;
         Vector2 min = new Vector2((scalesX[0] + scalesX[1]) / 2.0f, (scalesY[0] + scalesY[1]) / 2.0f);
         Vector2 max = new Vector2((scalesX[scalesX.length - 2] + scalesX[scalesX.length - 1]) / 2.0f,
                 (scalesY[scalesY.length - 2] + scalesY[scalesY.length - 1]) / 2.0f);
@@ -201,8 +202,9 @@ public class Graph implements Disposable {
         scalesXNorm = Util.normalize(scalesX, min.x, max.x);
         scalesYNorm = Util.normalize(scalesY, min.y, max.y);
         centerAxisNorm = Util.normalize(centerAxis, min, max);
-        graphs.forEach(graph -> {
-            GraphPoints graphNorm = new GraphPoints();
+
+        for (GraphPoints graph : graphs) {
+            graphNorm = new GraphPoints();
 
             graphNorm.lineWidth = graph.lineWidth;
             graphNorm.lineColor.set(graph.lineColor);
@@ -211,7 +213,7 @@ public class Graph implements Disposable {
             graphNorm.points = Util.normalize(graph.points, min, max);
 
             graphsNorm.add(graphNorm);
-        });
+        }
     }
 
     private void calcParams(float scaleX, float scaleY) {
@@ -246,11 +248,11 @@ public class Graph implements Disposable {
     }
 
     private void drawGraphs(int width, int height) {
-        Gdx.gl30.glEnable(GL30.GL_BLEND);
-        Gdx.gl30.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        Gdx.gl20.glEnable(GL20.GL_BLEND);
+        Gdx.gl20.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 
-        graphsNorm.forEach(graphNorm -> {
-            Gdx.gl30.glLineWidth(graphNorm.lineWidth);
+        for (GraphPoints graphNorm : graphsNorm) {
+            Gdx.gl20.glLineWidth(graphNorm.lineWidth);
 
             renderer.begin(ShapeRenderer.ShapeType.Line);
             renderer.setColor(graphNorm.lineColor);
@@ -262,7 +264,7 @@ public class Graph implements Disposable {
 
             renderer.end();
 
-            Gdx.gl30.glLineWidth(1.0f);
+            Gdx.gl20.glLineWidth(1.0f);
 
             renderer.begin(ShapeRenderer.ShapeType.Filled);
             renderer.setColor(graphNorm.pointColor);
@@ -272,9 +274,9 @@ public class Graph implements Disposable {
             }
 
             renderer.end();
-        });
+        }
 
-        Gdx.gl30.glDisable(GL30.GL_BLEND);
+        Gdx.gl20.glDisable(GL20.GL_BLEND);
     }
 
     public TextureRegion getGraph(int width, int height) {
